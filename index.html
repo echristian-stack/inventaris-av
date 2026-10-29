@@ -4,59 +4,145 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Inventaris Departemen AV</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <style>
-    body {
-      background: linear-gradient(145deg, #D2DAEF 0%, #CADDF2 50%, #e5eaf7 100%);
-      min-height: 100vh;
-      color: #1a1446;
-    }
-    .blob-1 { background: #A695DA; width: 220px; height: 220px; top: -20px; left: -20px; }
-    .blob-2 { background: #5BAAD2; width: 200px; height: 200px; top: 40%; right: -20px; }
-    .blob-3 { background: #7676D5; width: 200px; height: 200px; bottom: 5%; left: -10px; }
+    :root { --bg:#F4F2FF; --ink:#1B1B30; --muted:#6B6B85; --line:#E4DFFB; --purple:#7C4DEA; --purple-soft:#A78BFA; --teal:#2DD4BF; }
+    html body { font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif !important; background: var(--bg); color: var(--ink); min-height: 100vh; }
+    .uppercase { letter-spacing: .12em; }
+    .backdrop-blur-sm { -webkit-backdrop-filter: blur(16px) saturate(150%) !important; backdrop-filter: blur(16px) saturate(150%) !important; }
 
     .liquid-glass {
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.48) 0%, rgba(255, 255, 255, 0.24) 100%);
-      backdrop-filter: blur(24px) saturate(190%);
-      -webkit-backdrop-filter: blur(24px) saturate(190%);
-      border: 1.5px solid rgba(255, 255, 255, 0.88);
-      box-shadow: 0 10px 32px 0 rgba(43, 29, 150, 0.10), inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.92);
+      background: linear-gradient(135deg, rgba(255, 255, 255, .66) 0%, rgba(255, 255, 255, .40) 100%) !important;
+      -webkit-backdrop-filter: blur(18px) saturate(185%);
+      backdrop-filter: blur(18px) saturate(185%);
+      border: 1.5px solid rgba(255, 255, 255, .85);
+      box-shadow: 0 10px 30px rgba(109, 69, 232, 0.10), inset 0 1.5px 1px rgba(255, 255, 255, .95), inset 0 -1px 2px rgba(167, 139, 250, .10);
     }
     .liquid-subcard {
-      background: rgba(255, 255, 255, 0.60);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      border: 1.5px solid rgba(255, 255, 255, 0.92);
-      box-shadow: 0 4px 14px rgba(30, 89, 143, 0.06);
+      background: rgba(255, 255, 255, .52);
+      border: 1.5px solid rgba(255, 255, 255, .85);
+      box-shadow: 0 3px 10px rgba(109, 69, 232, 0.06), inset 0 1px 1px rgba(255, 255, 255, .9);
     }
     .liquid-input {
-      background: rgba(255, 255, 255, 0.86);
-      border: 2px solid rgba(118, 118, 213, 0.45);
-      color: #1a1446;
-      transition: all 0.2s;
+      background: rgba(255, 255, 255, .78);
+      border: 1.5px solid rgba(214, 205, 250, .9);
+      color: var(--ink);
+      transition: border-color .2s, box-shadow .2s;
     }
+    .liquid-input::placeholder { color: #9A98B5; }
     .liquid-input:focus {
-      background: rgba(255, 255, 255, 0.98);
-      border-color: #53339E;
+      border-color: var(--purple-soft);
       outline: none;
-      box-shadow: 0 0 0 3px rgba(166, 149, 218, 0.35);
+      box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.25);
     }
     .btn-primary {
-      background: linear-gradient(135deg, #53339E 0%, #2B1D96 100%);
+      background: linear-gradient(135deg, #7C4DEA 0%, #A78BFA 100%);
       color: #ffffff;
-      border: 1px solid rgba(255, 255, 255, 0.45);
-      box-shadow: 0 6px 18px rgba(43, 29, 150, 0.28);
+      border: 0;
+      box-shadow: 0 6px 16px rgba(124, 77, 234, 0.28);
     }
     .btn-ocean {
-      background: linear-gradient(135deg, #1E598F 0%, #5BAAD2 100%);
+      background: linear-gradient(135deg, #12A596 0%, #2DD4BF 100%);
       color: #ffffff;
-      border: 1px solid rgba(255, 255, 255, 0.45);
-      box-shadow: 0 6px 18px rgba(30, 89, 143, 0.25);
+      border: 0;
+      box-shadow: 0 6px 16px rgba(18, 165, 150, 0.25);
     }
+    .icon-btn {
+      width: 40px; height: 40px; display: grid; place-items: center; font-size: 15px;
+      background: #ffffff; border: 1.5px solid var(--line); border-radius: 14px;
+      box-shadow: 0 2px 8px rgba(109, 69, 232, 0.06); color: var(--ink); text-decoration: none; cursor: pointer;
+    }
+    .icon-btn:active { transform: scale(.95); }
+
+    /* Kartu detail: garis aksen ungu di atas seperti kartu grup notch */
+    #detailCard { position: relative; overflow: hidden; border-width: 1.5px; border-color: var(--line); padding-top: 1.35rem; }
+    #detailCard::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 6px; background: linear-gradient(90deg, #6D45E8, #A78BFA); }
+
+    /* Latar atas bergradasi */
+    .top-glow {
+      position: absolute; left: 0; right: 0; top: 0; height: 300px; z-index: -10; pointer-events: none;
+      background:
+        radial-gradient(120% 90% at 100% 0%, rgba(45, 212, 191, .38) 0%, rgba(45, 212, 191, 0) 60%),
+        radial-gradient(110% 100% at 0% 0%, rgba(167, 139, 250, .55) 0%, rgba(167, 139, 250, 0) 65%),
+        linear-gradient(180deg, #DCD2FF 0%, #D3E8FF 45%, rgba(244, 242, 255, 0) 100%);
+    }
+    .act-btn { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 56px; background: none; border: 0; padding: 0; text-decoration: none; cursor: pointer; }
+    .act-btn small { font-size: 10px; font-weight: 700; color: #4B4B66; line-height: 1; white-space: nowrap; }
+
+    /* Navigasi bawah: kaca ala Apple (tebal, hampir tembus, blur tipis) */
+    #bottomNav {
+      background: linear-gradient(180deg, rgba(255, 255, 255, .36) 0%, rgba(255, 255, 255, .14) 100%);
+      -webkit-backdrop-filter: blur(9px) saturate(170%);
+      backdrop-filter: blur(9px) saturate(170%);
+      border: 1.5px solid rgba(255, 255, 255, .8);
+      border-radius: 30px;
+      box-shadow: 0 14px 34px rgba(80, 50, 180, .22),
+                  inset 0 2px 2px rgba(255, 255, 255, .95),
+                  inset 0 -3px 4px rgba(150, 130, 230, .18),
+                  inset 0 0 16px rgba(255, 255, 255, .35);
+    }
+    #bottomNav button { position: relative; background: transparent; color: #3F3F5C; border: 0; box-shadow: none; }
+    #bottomNav button .nav-ico { width: 54px; height: 34px; display: grid; place-items: center; border-radius: 18px; font-size: 17px; filter: grayscale(1) opacity(.7); transition: background .2s; }
+    #bottomNav button.btn-primary { color: #6D45E8; }
+    #bottomNav button.btn-primary .nav-ico { background: rgba(255, 255, 255, .78); filter: none; box-shadow: 0 3px 10px rgba(109, 69, 232, .18), inset 0 1px 1px rgba(255, 255, 255, .9); }
+
+    /* Latar berwarna lembut supaya efek kaca terlihat */
+    .bg-blob { position: fixed; border-radius: 9999px; filter: blur(60px); pointer-events: none; z-index: -10; }
+
+    /* Jendela popup & overlay: kaca ala macOS */
+    #editModal, #addModal, #pinjamModal, #transportModal, #customDialogModal { background: rgba(60, 45, 130, .14) !important; }
+    #editModal > div, #addModal > div, #pinjamModal > div, #transportModal > div, #customDialogModal > div, #horeToast > div {
+      background: linear-gradient(145deg, rgba(255, 255, 255, .78) 0%, rgba(255, 255, 255, .56) 100%) !important;
+      -webkit-backdrop-filter: blur(30px) saturate(190%);
+      backdrop-filter: blur(30px) saturate(190%);
+      border: 1.5px solid rgba(255, 255, 255, .9) !important;
+      box-shadow: 0 24px 60px rgba(60, 40, 150, .28), inset 0 2px 2px rgba(255, 255, 255, .95), inset 0 -2px 4px rgba(167, 139, 250, .12);
+    }
+    #editModal .liquid-subcard, #addModal .liquid-subcard, #pinjamModal .liquid-subcard, #transportModal .liquid-subcard { background: rgba(255, 255, 255, .5); }
+
+    /* Tombol "Lanjut" & tombol teal: bercahaya */
+    .btn-ocean, #btnNextTransport { box-shadow: 0 8px 22px rgba(45, 212, 191, .45), inset 0 1px 1px rgba(255, 255, 255, .45) !important; }
+
+    /* Menu dropdown kaca */
+    .dd-wrap { position: relative; width: 100%; }
+    .dd-btn { display: flex !important; align-items: center; justify-content: space-between; gap: 8px; text-align: left; cursor: pointer; }
+    .dd-btn .dd-label { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .dd-btn svg { flex: none; width: 14px; height: 14px; color: #7C4DEA; transition: transform .2s; }
+    .dd-btn.open svg { transform: rotate(180deg); }
+    .dd-panel {
+      position: fixed; z-index: 90; overflow-y: auto; padding: 6px; border-radius: 18px;
+      background: linear-gradient(145deg, rgba(255, 255, 255, .8) 0%, rgba(255, 255, 255, .6) 100%);
+      -webkit-backdrop-filter: blur(26px) saturate(190%);
+      backdrop-filter: blur(26px) saturate(190%);
+      border: 1.5px solid rgba(255, 255, 255, .92);
+      box-shadow: 0 20px 48px rgba(60, 40, 150, .28), inset 0 1.5px 1px rgba(255, 255, 255, .95);
+      animation: ddIn .14s ease-out;
+    }
+    @keyframes ddIn { from { opacity: 0; transform: translateY(-4px) scale(.98); } to { opacity: 1; transform: none; } }
+    .dd-item { padding: 9px 11px; border-radius: 12px; font-size: 12px; font-weight: 700; color: #1B1B30; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .dd-item span { min-width: 0; overflow-wrap: anywhere; }
+    .dd-item:hover { background: rgba(167, 139, 250, .18); }
+    .dd-item.sel { background: rgba(124, 77, 234, .14); color: #6D45E8; }
+    .dd-item.sel::after { content: '✓'; font-weight: 900; }
+
+    /* Tombol Copy ke WA: hijau + glitter */
+    @keyframes glitterSweep { 0% { background-position: -160% 0, 0 0; } 100% { background-position: 260% 0, 0 0; } }
+    @keyframes twinkle { 0%, 100% { opacity: .15; } 50% { opacity: 1; } }
+    .btn-glitter {
+      position: relative; overflow: hidden; color: #fff !important; border: 0;
+      background:
+        linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, .75) 50%, transparent 65%) -160% 0 / 60% 100% no-repeat,
+        linear-gradient(135deg, #059669 0%, #34D399 100%) !important;
+      animation: glitterSweep 1.3s ease-in-out infinite;
+      box-shadow: 0 8px 22px rgba(16, 185, 129, .5), inset 0 1px 1px rgba(255, 255, 255, .5) !important;
+    }
+
     .loader {
-      border: 3.5px solid rgba(118, 118, 213, 0.25);
-      border-top: 3.5px solid #53339E;
+      border: 3.5px solid rgba(167, 139, 250, 0.25);
+      border-top: 3.5px solid #7C4DEA;
       border-radius: 50%;
       width: 26px;
       height: 26px;
@@ -74,42 +160,33 @@
 </head>
 <body class="font-sans antialiased selection:bg-purple-200">
 
-  <div class="fixed inset-0 overflow-hidden pointer-events-none -z-10">
-    <div class="absolute rounded-full filter blur-3xl opacity-55 blob-1"></div>
-    <div class="absolute rounded-full filter blur-3xl opacity-50 blob-2"></div>
-    <div class="absolute rounded-full filter blur-3xl opacity-45 blob-3"></div>
-  </div>
+  <div class="top-glow"></div>
+  <div class="bg-blob" style="width:240px;height:240px;top:36%;left:-90px;background:rgba(167,139,250,.38)"></div>
+  <div class="bg-blob" style="width:220px;height:220px;top:58%;right:-90px;background:rgba(45,212,191,.30)"></div>
+  <div class="bg-blob" style="width:200px;height:200px;bottom:-40px;left:20%;background:rgba(244,114,182,.20)"></div>
 
   <div class="max-w-md mx-auto min-h-screen relative pb-28 px-3.5 pt-3">
-    
-    <!-- HEADER BANNER -->
-    <header class="relative rounded-3xl overflow-hidden mb-3.5 border-[1.5px] border-white/90 shadow-[0_12px_32px_rgba(43,29,150,0.14)] w-full">
-      <img src="https://cms-imgp.jw-cdn.org/img/p/502500226/univ/art/502500226_univ_lsr_lg.jpg" 
-           alt="Inventaris AV" 
-           class="w-full h-36 object-cover object-center block">
-      <div class="absolute inset-0 bg-gradient-to-t from-[#1a1446]/45 via-transparent to-white/10 pointer-events-none"></div>
 
-      <div class="absolute bottom-2 left-2 right-2 rounded-2xl px-3 py-2 flex items-center justify-between gap-2"
-           style="background: linear-gradient(135deg, rgba(255, 255, 255, 0.82) 0%, rgba(240, 244, 255, 0.66) 100%); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); border: 1.5px solid rgba(255, 255, 255, 0.94); box-shadow: 0 8px 20px rgba(26, 20, 70, 0.15);">
-        <div class="min-w-0 flex-1">
-          <h1 class="text-sm font-black text-[#2B1D96] leading-tight truncate">Inventaris AV</h1>
-          <p class="text-[11px] font-bold text-[#1E598F] truncate">Cari, Pinjam & Rapikan Kotak</p>
-        </div>
-        <div class="flex items-center gap-1.5 shrink-0">
-          <button onclick="loadDataFromServer(true)" title="Muat Ulang" class="bg-white/90 px-2.5 py-1.5 rounded-xl text-xs font-extrabold text-[#2B1D96] border border-white shadow-sm active:scale-95 transition">
-            🔄
-          </button>
-          <a id="btnLihatTabel" href="#" target="_blank" class="btn-ocean text-xs font-extrabold px-2.5 py-1.5 rounded-xl transition flex items-center gap-1 shadow-sm">
-            <span>📊</span> Tabel
-          </a>
-        </div>
+    <!-- HEADER -->
+    <header class="flex items-center justify-between gap-3 px-1.5 pt-4 pb-4 mb-3.5 border-b" style="border-color:rgba(167,139,250,.28)">
+      <div class="min-w-0 flex-1">
+        <h1 class="text-[24px] leading-none font-black tracking-tight text-[#1B1B30] whitespace-nowrap">inventaris AV<span class="text-[#A78BFA]">.</span></h1>
+        <p class="text-[12px] leading-snug font-semibold text-[#55557A] mt-1.5">Cari, Pinjam &amp; Rapikan Kotak</p>
+      </div>
+      <div class="flex items-start gap-2 shrink-0">
+        <button onclick="loadDataFromServer(true)" class="act-btn" title="Muat ulang data">
+          <span class="icon-btn"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#7C4DEA" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.5-4.5L4 8"/><path d="M4 4v4h4"/><path d="M4 13a8 8 0 0 0 14.5 4.5L20 16"/><path d="M20 20v-4h-4"/></svg></span><small>Refresh</small>
+        </button>
+        <a id="btnLihatTabel" href="#" target="_blank" class="act-btn" title="Buka Google Sheet">
+          <span class="icon-btn"><svg viewBox="0 0 48 48" width="22" height="22" aria-hidden="true"><path fill="#0F9D58" d="M29 4H11a3 3 0 0 0-3 3v34a3 3 0 0 0 3 3h26a3 3 0 0 0 3-3V15z"/><path fill="#87CEAC" d="M29 4v8a3 3 0 0 0 3 3h8z"/><rect x="14" y="23" width="20" height="14" rx="1.5" fill="#fff"/><path d="M14 28h20M14 32.5h20M22 23v14" stroke="#0F9D58" stroke-width="1.6" fill="none"/></svg></span><small>Buka Tabel</small>
+        </a>
       </div>
     </header>
 
     <!-- LOADING -->
     <div id="loading" class="liquid-glass rounded-3xl p-3 text-center my-2.5 hidden">
       <div class="loader"></div>
-      <p class="text-xs font-extrabold text-[#2B1D96] mt-1">Memproses Cepat...</p>
+      <p class="text-xs font-extrabold text-[#1B1B30] mt-1">Memproses Cepat...</p>
     </div>
 
     <!-- ==================== MENU 1: CARI & PINJAM ==================== -->
@@ -134,11 +211,11 @@
       </div>
 
       <!-- KARTU DETAIL BARANG -->
-      <div id="detailCard" class="liquid-glass p-4 rounded-3xl hidden space-y-3 border-2 border-[#53339E]">
+      <div id="detailCard" class="liquid-glass p-4 rounded-3xl hidden space-y-3 border-2 border-[#7C4DEA]">
         <div class="flex justify-between items-start gap-2">
           <div class="min-w-0 flex-1">
-            <span id="detKotakBadge" class="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-[#CADDF2] text-[#2B1D96] truncate inline-block max-w-full"></span>
-            <h2 id="detNama" class="font-black text-base text-[#2B1D96] mt-1 leading-snug break-words"></h2>
+            <span id="detKotakBadge" class="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-[#E9E3FF] text-[#1B1B30] truncate inline-block max-w-full"></span>
+            <h2 id="detNama" class="font-black text-base text-[#1B1B30] mt-1 leading-snug break-words"></h2>
           </div>
           <button onclick="document.getElementById('detailCard').classList.add('hidden')" class="liquid-subcard px-3 py-1 rounded-xl text-xs font-black text-slate-700 shrink-0">
             ✖
@@ -160,24 +237,24 @@
         <div class="liquid-subcard rounded-2xl p-2.5 grid grid-cols-3 gap-1 text-center text-xs">
           <div class="truncate">
             <span class="text-[10px] text-slate-500 block font-extrabold">KOTAK</span>
-            <strong id="detTabel" class="font-black text-[#2B1D96] text-xs truncate block"></strong>
+            <strong id="detTabel" class="font-black text-[#1B1B30] text-xs truncate block"></strong>
           </div>
           <div class="truncate">
             <span class="text-[10px] text-slate-500 block font-extrabold">BARIS</span>
-            <strong id="detBaris" class="font-black text-[#2B1D96] text-xs truncate block">Baris <span id="detBarisNum"></span></strong>
+            <strong id="detBaris" class="font-black text-[#1B1B30] text-xs truncate block">Baris <span id="detBarisNum"></span></strong>
           </div>
           <div class="truncate">
             <span class="text-[10px] text-slate-500 block font-extrabold">NO. URUT</span>
-            <strong id="detNomor" class="font-black text-[#2B1D96] text-xs truncate block">#<span id="detNomorNum"></span></strong>
+            <strong id="detNomor" class="font-black text-[#1B1B30] text-xs truncate block">#<span id="detNomorNum"></span></strong>
           </div>
         </div>
 
         <div>
           <div class="flex justify-between items-center mb-1">
-            <span class="text-xs font-black text-[#2B1D96]">📸 Foto:</span>
+            <span class="text-xs font-black text-[#1B1B30]">📸 Foto:</span>
             <span id="detStatusFoto" class="text-[11px] font-extrabold px-2 py-0.5 rounded-full"></span>
           </div>
-          <div class="w-full h-40 rounded-2xl border-2 border-dashed border-[#7676D5] bg-white/50 flex flex-col items-center justify-center overflow-hidden">
+          <div class="w-full h-40 rounded-2xl border-2 border-dashed border-[#B9A7F5] bg-white/50 flex flex-col items-center justify-center overflow-hidden">
             <img id="detFoto" class="w-full h-full object-cover cursor-pointer hidden" onclick="zoomImage(this.src)">
             <div id="noFotoPlaceholder" class="text-center p-2">
               <span class="text-2xl block">🖼️</span>
@@ -188,7 +265,7 @@
 
         <div class="liquid-subcard p-3 rounded-2xl space-y-1.5 text-xs">
           <div class="flex justify-between gap-2"><span class="font-bold text-slate-600 shrink-0">👤 Peminjam:</span> <strong id="detPeminjam" class="font-black text-slate-900 truncate text-right"></strong></div>
-          <div class="flex justify-between gap-2"><span class="font-bold text-slate-600 shrink-0">🛡️ PIC:</span> <strong id="detPetugas" class="font-black text-[#53339E] truncate text-right"></strong></div>
+          <div class="flex justify-between gap-2"><span class="font-bold text-slate-600 shrink-0">🛡️ PIC:</span> <strong id="detPetugas" class="font-black text-[#7C4DEA] truncate text-right"></strong></div>
           <div class="flex justify-between gap-2"><span class="font-bold text-slate-600 shrink-0">📅 Pinjam/Kembali:</span> <strong id="detTglInfo" class="font-bold text-slate-800 truncate text-right"></strong></div>
           <div class="flex justify-between gap-2"><span class="font-bold text-slate-600 shrink-0">📝 Catatan:</span> <strong id="detCatatan" class="font-bold text-slate-800 truncate text-right"></strong></div>
           <div class="flex justify-between gap-2"><span class="font-bold text-slate-500 shrink-0">✍️ Penginput:</span> <strong id="detPenginput" class="font-bold text-slate-700 truncate text-right"></strong></div>
@@ -203,7 +280,7 @@
             <span>📥</span> Masuk Kotak
           </button>
 
-          <button onclick="openEditModal(currentItem)" class="w-full liquid-subcard text-[#2B1D96] font-black py-2.5 rounded-2xl text-xs flex items-center justify-center gap-1.5 border border-[#7676D5]">
+          <button onclick="openEditModal(currentItem)" class="w-full liquid-subcard text-[#1B1B30] font-black py-2.5 rounded-2xl text-xs flex items-center justify-center gap-1.5 border border-[#B9A7F5]">
             <span>🛠️</span> Edit / Titip / Rusak
           </button>
         </div>
@@ -211,8 +288,8 @@
 
       <div class="liquid-glass p-3.5 rounded-3xl">
         <div class="flex justify-between items-center mb-2.5">
-          <h3 class="text-xs font-black text-[#2B1D96] uppercase">📋 Daftar Alat:</h3>
-          <span id="searchCountBadge" class="text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-white/80 text-[#53339E]">0 Alat</span>
+          <h3 class="text-xs font-black text-[#1B1B30] uppercase">📋 Daftar Alat:</h3>
+          <span id="searchCountBadge" class="text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-white/80 text-[#7C4DEA]">0 Alat</span>
         </div>
         <div id="searchResults" class="space-y-2 max-h-[54vh] overflow-y-auto pr-0.5"></div>
       </div>
@@ -224,7 +301,7 @@
       
       <div class="liquid-glass p-3.5 rounded-3xl space-y-2.5">
         <div class="flex justify-between items-center gap-2">
-          <label class="text-xs font-black text-[#2B1D96]">📦 Pilih Kotak:</label>
+          <label class="text-xs font-black text-[#1B1B30]">📦 Pilih Kotak:</label>
           <button onclick="openAddModal()" class="btn-primary px-3 py-1.5 rounded-xl text-xs font-black shadow shrink-0">
             ➕ Alat / Kotak
           </button>
@@ -234,8 +311,8 @@
 
         <div class="liquid-subcard p-3 rounded-2xl space-y-2 border-2 border-white">
           <div class="flex justify-between items-center">
-            <span class="text-[11px] font-black text-[#1E598F] uppercase">🚚 Pengangkutan Kotak:</span>
-            <button onclick="openTransportModalForCurrentBox()" class="text-xs font-black text-[#53339E] underline shrink-0">
+            <span class="text-[11px] font-black text-[#0E9F8E] uppercase">🚚 Pengangkutan Kotak:</span>
+            <button onclick="openTransportModalForCurrentBox()" class="text-xs font-black text-[#7C4DEA] underline shrink-0">
               Ubah Status
             </button>
           </div>
@@ -243,7 +320,7 @@
           <div id="boxCurrentTransportBadge" class="p-2.5 rounded-xl font-black text-xs text-center shadow-sm truncate"></div>
           
           <div class="flex justify-between items-center text-[11px] font-bold text-slate-600 px-1 truncate">
-            <span class="truncate">Oleh: <b id="boxTransportUpdater" class="text-[#2B1D96]">-</b></span>
+            <span class="truncate">Oleh: <b id="boxTransportUpdater" class="text-[#1B1B30]">-</b></span>
             <span class="shrink-0">Waktu: <b id="boxTransportTime">-</b></span>
           </div>
 
@@ -252,19 +329,22 @@
         </div>
 
         <div class="flex gap-2">
-          <button onclick="promptRenameCurrentBox()" class="flex-1 liquid-subcard py-2.5 rounded-xl text-xs font-extrabold text-[#2B1D96] truncate">
+          <button onclick="promptRenameCurrentBox()" class="flex-1 liquid-subcard py-2.5 rounded-xl text-xs font-extrabold text-[#1B1B30] truncate">
             ✏️ Ganti Nama
           </button>
-          <button onclick="openAddModalForCurrentBox()" class="flex-1 liquid-subcard py-2.5 rounded-xl text-xs font-extrabold text-[#1E598F] truncate">
+          <button onclick="openAddModalForCurrentBox()" class="flex-1 liquid-subcard py-2.5 rounded-xl text-xs font-extrabold text-[#0E9F8E] truncate">
             ➕ Isi Alat
+          </button>
+          <button onclick="promptDeleteCurrentBox()" class="liquid-subcard px-3 py-2.5 rounded-xl text-xs font-extrabold text-rose-700 shrink-0">
+            🗑️ Hapus
           </button>
         </div>
       </div>
 
       <div class="liquid-glass p-3.5 rounded-3xl space-y-2">
         <div class="flex justify-between items-center">
-          <span class="text-xs font-black text-[#2B1D96] uppercase">📋 Isi Kotak Ini:</span>
-          <span id="manageBoxCount" class="text-xs font-extrabold bg-white/80 px-2.5 py-0.5 rounded-full text-[#53339E]">0 Alat</span>
+          <span class="text-xs font-black text-[#1B1B30] uppercase">📋 Isi Kotak Ini:</span>
+          <span id="manageBoxCount" class="text-xs font-extrabold bg-white/80 px-2.5 py-0.5 rounded-full text-[#7C4DEA]">0 Alat</span>
         </div>
         <div id="manageBoxItems" class="space-y-2 max-h-[48vh] overflow-y-auto pr-0.5"></div>
       </div>
@@ -278,28 +358,28 @@
         <button id="subTabTagih" onclick="switchSubTim('tagih')" class="py-2 rounded-xl text-xs font-black btn-primary truncate">
           🛡️ Tugas Tim
         </button>
-        <button id="subTabPeminjam" onclick="switchSubTim('peminjam')" class="py-2 rounded-xl text-xs font-extrabold text-[#2B1D96] truncate">
+        <button id="subTabPeminjam" onclick="switchSubTim('peminjam')" class="py-2 rounded-xl text-xs font-extrabold text-[#1B1B30] truncate">
           👤 Peminjam
         </button>
-        <button id="subTabPenginput" onclick="switchSubTim('penginput')" class="py-2 rounded-xl text-xs font-extrabold text-[#2B1D96] truncate">
+        <button id="subTabPenginput" onclick="switchSubTim('penginput')" class="py-2 rounded-xl text-xs font-extrabold text-[#1B1B30] truncate">
           ✍️ Penginput
         </button>
       </div>
 
       <div id="viewTimTagih" class="liquid-glass p-3.5 rounded-3xl space-y-2.5">
-        <h3 class="font-black text-xs text-[#2B1D96]">🛡️ Tagihan Tim Inventaris (PIC)</h3>
+        <h3 class="font-black text-xs text-[#1B1B30]">🛡️ Tagihan Tim Inventaris (PIC)</h3>
         <select id="selPetugasInventaris" class="liquid-input p-3 rounded-2xl w-full text-xs font-black truncate" onchange="renderTagihanPetugas()">
           <option value="">-- Pilih Tim Inventaris --</option>
         </select>
 
-        <div id="petugasSummaryBox" class="hidden liquid-subcard p-2.5 rounded-2xl flex items-center justify-between border-l-4 border-l-[#53339E] text-xs">
+        <div id="petugasSummaryBox" class="hidden liquid-subcard p-2.5 rounded-2xl flex items-center justify-between border-l-4 border-l-[#7C4DEA] text-xs">
           <div>
             <span class="text-[11px] font-bold text-slate-600 block">Belum Kembali:</span>
-            <strong id="petugasTotalBarang" class="font-black text-[#2B1D96]">0 Alat</strong>
+            <strong id="petugasTotalBarang" class="font-black text-[#1B1B30]">0 Alat</strong>
           </div>
           <div class="text-right">
             <span class="text-[11px] font-bold text-slate-600 block">Peminjam:</span>
-            <strong id="petugasTotalClient" class="font-black text-[#1E598F]">0 Orang</strong>
+            <strong id="petugasTotalClient" class="font-black text-[#0E9F8E]">0 Orang</strong>
           </div>
         </div>
 
@@ -307,7 +387,7 @@
       </div>
 
       <div id="viewTimPeminjam" class="liquid-glass p-3.5 rounded-3xl space-y-2.5 hidden">
-        <h3 class="font-black text-xs text-[#2B1D96]">👤 Cari Nama Peminjam</h3>
+        <h3 class="font-black text-xs text-[#1B1B30]">👤 Cari Nama Peminjam</h3>
         <select id="selNamaPeminjam" class="liquid-input p-3 rounded-2xl w-full text-xs font-black truncate" onchange="renderDaftarPeminjam()">
           <option value="">-- Pilih Nama Peminjam --</option>
         </select>
@@ -320,7 +400,7 @@
       </div>
 
       <div id="viewTimPenginput" class="liquid-glass p-3.5 rounded-3xl space-y-2.5 hidden">
-        <h3 class="font-black text-xs text-[#2B1D96]">✍️ Riwayat Input Saudara</h3>
+        <h3 class="font-black text-xs text-[#1B1B30]">✍️ Riwayat Input Saudara</h3>
         <select id="selNamaPenginput" class="liquid-input p-3 rounded-2xl w-full text-xs font-black truncate" onchange="renderDaftarPenginput()">
           <option value="">-- Pilih Nama Saudara --</option>
         </select>
@@ -334,40 +414,40 @@
     <section id="secDash" class="hidden space-y-3">
       
       <div class="grid grid-cols-2 gap-2">
-        <div class="liquid-glass p-3 rounded-3xl border-l-4 border-l-[#1E598F]">
-          <span class="text-[10px] font-black text-[#1E598F] uppercase">📦 DI KOTAK</span>
-          <p id="statDiKotak" class="text-xl font-black text-[#1E598F] mt-0.5">0</p>
+        <div class="liquid-glass p-3 rounded-3xl border-l-4 border-l-[#0E9F8E]">
+          <span class="text-[10px] font-black text-[#0E9F8E] uppercase">📦 DI KOTAK</span>
+          <p id="statDiKotak" class="text-4xl font-black text-[#0E9F8E] mt-0.5">0</p>
         </div>
 
-        <div class="liquid-glass p-3 rounded-3xl border-l-4 border-l-[#53339E]">
-          <span class="text-[10px] font-black text-[#53339E] uppercase">⚡ DIPAKAI</span>
-          <p id="statDipakai" class="text-xl font-black text-[#53339E] mt-0.5">0</p>
+        <div class="liquid-glass p-3 rounded-3xl border-l-4 border-l-[#7C4DEA]">
+          <span class="text-[10px] font-black text-[#7C4DEA] uppercase">⚡ DIPAKAI</span>
+          <p id="statDipakai" class="text-4xl font-black text-[#7C4DEA] mt-0.5">0</p>
         </div>
 
         <div class="liquid-glass p-3 rounded-3xl border-l-4 border-l-emerald-600">
           <span class="text-[10px] font-black text-emerald-900 uppercase">✅ SELESAI</span>
-          <p id="statSelesai" class="text-xl font-black text-emerald-700 mt-0.5">0</p>
+          <p id="statSelesai" class="text-4xl font-black text-emerald-700 mt-0.5">0</p>
         </div>
 
         <div class="liquid-glass p-3 rounded-3xl border-l-4 border-l-amber-500">
           <span class="text-[10px] font-black text-amber-900 uppercase">⚠️ RUSAK/HILANG</span>
-          <p id="statRusak" class="text-xl font-black text-amber-600 mt-0.5">0</p>
+          <p id="statRusak" class="text-4xl font-black text-amber-600 mt-0.5">0</p>
         </div>
       </div>
 
       <div class="liquid-glass p-3.5 rounded-3xl space-y-2">
         <div class="flex items-center justify-between">
-          <h2 class="text-xs font-black text-[#2B1D96] flex items-center gap-1 truncate">
+          <h2 class="text-xs font-black text-[#1B1B30] flex items-center gap-1 truncate">
             <span>🚚</span> Status Pengangkutan Kotak
           </h2>
-          <span id="badgeTotalKotak" class="bg-[#2B1D96] text-white text-[10px] font-black px-2 py-0.5 rounded-full shrink-0">0</span>
+          <span id="badgeTotalKotak" class="bg-[#6D45E8] text-white text-[10px] font-black px-2 py-0.5 rounded-full shrink-0">0</span>
         </div>
         <div id="dashListTransportKotak" class="space-y-1.5 max-h-64 overflow-y-auto pr-0.5"></div>
       </div>
 
       <div class="liquid-glass p-3.5 rounded-3xl space-y-2">
         <div class="flex items-center justify-between">
-          <h2 class="text-xs font-black text-[#2B1D96] flex items-center gap-1 truncate">
+          <h2 class="text-xs font-black text-[#1B1B30] flex items-center gap-1 truncate">
             <span>🔄</span> Barang Titipan Sementara
           </h2>
           <span id="badgeCountTitipan" class="bg-amber-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full shrink-0">0</span>
@@ -377,17 +457,17 @@
 
       <div class="liquid-glass p-3.5 rounded-3xl space-y-2">
         <div class="flex items-center justify-between">
-          <h2 class="text-xs font-black text-[#2B1D96] flex items-center gap-1 truncate">
+          <h2 class="text-xs font-black text-[#1B1B30] flex items-center gap-1 truncate">
             <span>⚡</span> Sedang Dipakai di Gedung
           </h2>
-          <span id="badgeCountPeminjam" class="bg-[#53339E] text-white text-[10px] font-black px-2 py-0.5 rounded-full shrink-0">0</span>
+          <span id="badgeCountPeminjam" class="bg-[#7C4DEA] text-white text-[10px] font-black px-2 py-0.5 rounded-full shrink-0">0</span>
         </div>
         <div id="dashListPeminjam" class="space-y-1.5 max-h-44 overflow-y-auto"></div>
       </div>
 
       <div class="liquid-glass p-3.5 rounded-3xl space-y-2">
         <div class="flex items-center justify-between">
-          <h2 class="text-xs font-black text-[#2B1D96] flex items-center gap-1 truncate">
+          <h2 class="text-xs font-black text-[#1B1B30] flex items-center gap-1 truncate">
             <span>⚠️</span> Barang Rusak / Hilang
           </h2>
           <span id="badgeCountMasalah" class="bg-amber-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full shrink-0">0</span>
@@ -398,47 +478,48 @@
     </section>
 
     <!-- NAVIGASI BAWAH -->
-    <nav class="fixed bottom-0 left-0 right-0 z-30 px-3 pb-3 pt-1 pointer-events-none">
-      <div class="max-w-md mx-auto liquid-glass rounded-3xl p-1.5 grid grid-cols-4 gap-1 pointer-events-auto shadow-2xl">
-        <button id="navCari" onclick="switchTab('cari')" class="py-2 px-0.5 rounded-2xl flex flex-col items-center justify-center gap-0.5 btn-primary transition truncate">
-          <span class="text-base">🔍</span>
+    <nav class="fixed bottom-0 left-0 right-0 z-30 pointer-events-none px-3 pb-3">
+      <div id="bottomNav" class="max-w-md mx-auto px-2 py-2 grid grid-cols-4 gap-1 pointer-events-auto">
+        <button id="navCari" onclick="switchTab('cari')" class="py-1.5 px-0.5 rounded-2xl flex flex-col items-center justify-center gap-1 transition truncate btn-primary">
+          <span class="nav-ico">🔍</span>
           <span class="text-[11px] font-black leading-none truncate">Cari</span>
         </button>
-        <button id="navEdit" onclick="switchTab('edit')" class="py-2 px-0.5 rounded-2xl flex flex-col items-center justify-center gap-0.5 text-[#2B1D96] hover:bg-white/40 transition truncate">
-          <span class="text-base">📦</span>
-          <span class="text-[11px] font-extrabold leading-none truncate">Kotak</span>
+        <button id="navEdit" onclick="switchTab('edit')" class="py-1.5 px-0.5 rounded-2xl flex flex-col items-center justify-center gap-1 transition truncate">
+          <span class="nav-ico">📦</span>
+          <span class="text-[11px] font-bold leading-none truncate">Kotak</span>
         </button>
-        <button id="navTim" onclick="switchTab('tim')" class="py-2 px-0.5 rounded-2xl flex flex-col items-center justify-center gap-0.5 text-[#2B1D96] hover:bg-white/40 transition truncate">
-          <span class="text-base">📋</span>
-          <span class="text-[11px] font-extrabold leading-none truncate">Tagih</span>
+        <button id="navTim" onclick="switchTab('tim')" class="py-1.5 px-0.5 rounded-2xl flex flex-col items-center justify-center gap-1 transition truncate">
+          <span class="nav-ico">📋</span>
+          <span class="text-[11px] font-bold leading-none truncate">Tagih</span>
         </button>
-        <button id="navDash" onclick="switchTab('dash')" class="py-2 px-0.5 rounded-2xl flex flex-col items-center justify-center gap-0.5 text-[#2B1D96] hover:bg-white/40 transition truncate">
-          <span class="text-base">📊</span>
-          <span class="text-[11px] font-extrabold leading-none truncate">Ringkasan</span>
+        <button id="navDash" onclick="switchTab('dash')" class="py-1.5 px-0.5 rounded-2xl flex flex-col items-center justify-center gap-1 transition truncate">
+          <span class="nav-ico">📊</span>
+          <span class="text-[11px] font-bold leading-none truncate">Ringkasan</span>
         </button>
       </div>
     </nav>
+
 
     <!-- MODAL: TRANSPORT -->
     <div id="transportModal" class="fixed inset-0 bg-[#1a1446]/50 backdrop-blur-sm hidden z-40 flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div class="liquid-glass bg-white/95 w-full sm:max-w-sm rounded-t-3xl sm:rounded-3xl p-4 shadow-2xl space-y-2.5 max-h-[90vh] overflow-y-auto">
         <div class="flex justify-between items-center">
-          <h3 class="font-black text-sm text-[#2B1D96]">🚚 Pengangkutan Kotak</h3>
+          <h3 class="font-black text-sm text-[#1B1B30]">🚚 Pengangkutan Kotak</h3>
           <button onclick="closeModal('transportModal')" class="text-slate-600 font-black text-lg">&times;</button>
         </div>
 
         <div class="liquid-subcard p-2.5 rounded-2xl text-xs truncate">
           <span class="text-slate-500 font-bold">Kotak:</span>
-          <strong id="mdlTransBoxName" class="text-sm font-black text-[#2B1D96] truncate block"></strong>
+          <strong id="mdlTransBoxName" class="text-sm font-black text-[#1B1B30] truncate block"></strong>
         </div>
 
         <div>
-          <label class="font-black text-[#53339E] text-xs block mb-1">✍️ Nama Saudara *</label>
+          <label class="font-black text-[#7C4DEA] text-xs block mb-1">✍️ Nama Saudara *</label>
           <input type="text" id="mdlTransUpdater" placeholder="Nama Saudara..." class="liquid-input p-2.5 rounded-xl w-full text-xs font-extrabold">
         </div>
 
         <div>
-          <label class="font-black text-[#2B1D96] text-xs block mb-1">Pilih Status:</label>
+          <label class="font-black text-[#1B1B30] text-xs block mb-1">Pilih Status:</label>
           <div id="mdlTransportOptions" class="space-y-1.5"></div>
         </div>
 
@@ -452,22 +533,22 @@
     <div id="pinjamModal" class="fixed inset-0 bg-[#1a1446]/50 backdrop-blur-sm hidden z-40 flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div class="liquid-glass bg-white/95 w-full sm:max-w-sm rounded-t-3xl sm:rounded-3xl p-4 shadow-2xl space-y-2.5">
         <div class="flex justify-between items-center">
-          <h3 class="font-black text-sm text-[#2B1D96]">🤝 Pinjam Alat</h3>
+          <h3 class="font-black text-sm text-[#1B1B30]">🤝 Pinjam Alat</h3>
           <button onclick="closeModal('pinjamModal')" class="text-slate-600 font-black text-lg">&times;</button>
         </div>
         
         <div class="liquid-subcard p-2.5 rounded-2xl text-xs truncate">
-          <strong id="mdlPinjamNamaAlat" class="font-black text-[#2B1D96] truncate block"></strong>
-          <span id="mdlPinjamKotak" class="text-[11px] text-[#1E598F] font-extrabold truncate block"></span>
+          <strong id="mdlPinjamNamaAlat" class="font-black text-[#1B1B30] truncate block"></strong>
+          <span id="mdlPinjamKotak" class="text-[11px] text-[#0E9F8E] font-extrabold truncate block"></span>
         </div>
 
         <div class="space-y-2 text-xs">
           <div>
-            <label class="font-black text-[#2B1D96] block mb-0.5">1. Peminjam *</label>
+            <label class="font-black text-[#1B1B30] block mb-0.5">1. Peminjam *</label>
             <input type="text" id="mdlPeminjamNama" placeholder="Nama peminjam..." class="liquid-input p-2.5 rounded-xl w-full text-xs font-bold">
           </div>
           <div>
-            <label class="font-black text-[#53339E] block mb-0.5">2. PIC (Tim Inventaris) *</label>
+            <label class="font-black text-[#7C4DEA] block mb-0.5">2. PIC (Tim Inventaris) *</label>
             <input type="text" id="mdlPetugasNama" placeholder="Nama Saudara..." class="liquid-input p-2.5 rounded-xl w-full text-xs font-bold">
           </div>
           <div>
@@ -487,25 +568,25 @@
     <div id="editModal" class="fixed inset-0 bg-[#1a1446]/50 backdrop-blur-sm hidden z-40 flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div class="liquid-glass bg-white/95 w-full sm:max-w-sm rounded-t-3xl sm:rounded-3xl p-4 shadow-2xl max-h-[90vh] overflow-y-auto space-y-2.5">
         <div class="flex justify-between items-center">
-          <h3 class="font-black text-sm text-[#2B1D96]">🛠️ Edit Alat</h3>
+          <h3 class="font-black text-sm text-[#1B1B30]">🛠️ Edit Alat</h3>
           <button onclick="closeModal('editModal')" class="text-slate-600 font-black text-lg">&times;</button>
         </div>
 
         <div class="space-y-2 text-xs">
           <div>
-            <label class="font-black text-[#2B1D96] block mb-0.5">Nama Alat</label>
+            <label class="font-black text-[#1B1B30] block mb-0.5">Nama Alat</label>
             <input type="text" id="edtNama" class="liquid-input p-2.5 rounded-xl w-full text-xs font-extrabold">
           </div>
 
           <div class="liquid-subcard p-2.5 rounded-2xl space-y-1.5">
             <div>
-              <label class="font-black text-[#1E598F] block mb-0.5">📦 Kotak:</label>
+              <label class="font-black text-[#0E9F8E] block mb-0.5">📦 Kotak:</label>
               <select id="edtSheet" class="liquid-input p-2 rounded-xl w-full text-xs font-black truncate" onchange="onEdtSheetChange()"></select>
             </div>
 
             <div id="edtTitipanOptionWrap" class="hidden bg-amber-100 border border-amber-400 p-2 rounded-xl space-y-1">
               <label class="flex items-start gap-2 cursor-pointer">
-                <input type="checkbox" id="edtIsTitipan" class="mt-0.5 w-3.5 h-3.5 accent-[#53339E] shrink-0" checked>
+                <input type="checkbox" id="edtIsTitipan" class="mt-0.5 w-3.5 h-3.5 accent-[#7C4DEA] shrink-0" checked>
                 <span class="text-[10px] font-extrabold text-amber-950 leading-snug truncate">
                   🔄 <b>Titipan Sementara</b> (Asal: <b id="edtAsalLabel"></b>)
                 </span>
@@ -513,7 +594,7 @@
             </div>
 
             <div>
-              <label class="font-black text-[#53339E] block mb-0.5">📌 Status:</label>
+              <label class="font-black text-[#7C4DEA] block mb-0.5">📌 Status:</label>
               <select id="edtStatus" class="liquid-input p-2 rounded-xl w-full text-xs font-black">
                 <option value="di kotak">📦 di kotak</option>
                 <option value="dipakai di gedung">⚡ dipakai di gedung</option>
@@ -545,15 +626,15 @@
           </div>
 
           <div>
-            <label class="font-black text-[#53339E] block mb-0.5">✍️ Nama Saudara *</label>
+            <label class="font-black text-[#7C4DEA] block mb-0.5">✍️ Nama Saudara *</label>
             <input type="text" id="edtPenginput" placeholder="Wajib diisi..." class="liquid-input p-2 rounded-xl w-full text-xs font-extrabold">
           </div>
 
           <div>
-            <label class="font-black text-[#2B1D96] block mb-0.5">📸 Foto</label>
-            <div class="border-2 border-dashed border-[#7676D5] p-2.5 text-center rounded-2xl relative bg-white/70">
+            <label class="font-black text-[#1B1B30] block mb-0.5">📸 Foto</label>
+            <div class="border-2 border-dashed border-[#B9A7F5] p-2.5 text-center rounded-2xl relative bg-white/70">
               <input type="file" id="edtFoto" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept="image/*" onchange="handlePhotoUpload(event, 'edit')">
-              <span class="text-[#2B1D96] font-black text-xs">📸 Ambil / Ganti Foto</span>
+              <span class="text-[#1B1B30] font-black text-xs">📸 Ambil / Ganti Foto</span>
               <img id="previewEdt" class="mt-1.5 mx-auto rounded-xl hidden max-h-24 object-contain shadow">
             </div>
           </div>
@@ -571,13 +652,13 @@
     <div id="addModal" class="fixed inset-0 bg-[#1a1446]/50 backdrop-blur-sm hidden z-40 flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div class="liquid-glass bg-white/95 w-full sm:max-w-sm rounded-t-3xl sm:rounded-3xl p-4 shadow-2xl max-h-[90vh] overflow-y-auto space-y-2.5">
         <div class="flex justify-between items-center">
-          <h3 class="font-black text-sm text-[#2B1D96]">➕ Alat Baru</h3>
+          <h3 class="font-black text-sm text-[#1B1B30]">➕ Alat Baru</h3>
           <button onclick="closeModal('addModal')" class="text-slate-600 font-black text-lg">&times;</button>
         </div>
 
         <div class="space-y-2 text-xs">
           <div class="liquid-subcard p-2.5 rounded-2xl space-y-1.5">
-            <label class="font-black text-[#2B1D96] block">1. Kotak:</label>
+            <label class="font-black text-[#1B1B30] block">1. Kotak:</label>
             <select id="newSheetSelect" class="liquid-input p-2 rounded-xl w-full text-xs font-black truncate" onchange="onNewSheetChange()"></select>
             <div id="newBoxNameWrap" class="hidden pt-1">
               <input type="text" id="newBoxCustomName" placeholder="Nama Kotak Baru..." class="liquid-input p-2 rounded-xl w-full text-xs font-extrabold">
@@ -585,17 +666,17 @@
           </div>
 
           <div>
-            <label class="font-black text-[#2B1D96] block mb-0.5">2. Nama Alat *</label>
+            <label class="font-black text-[#1B1B30] block mb-0.5">2. Nama Alat *</label>
             <input type="text" id="newNama" placeholder="Nama alat..." class="liquid-input p-2.5 rounded-xl w-full text-xs font-extrabold">
           </div>
 
           <div>
-            <label class="font-black text-[#53339E] block mb-0.5">3. Nama Saudara *</label>
+            <label class="font-black text-[#7C4DEA] block mb-0.5">3. Nama Saudara *</label>
             <input type="text" id="newPenginput" placeholder="Wajib diisi..." class="liquid-input p-2.5 rounded-xl w-full text-xs font-extrabold">
           </div>
 
           <div>
-            <label class="font-black text-[#2B1D96] block mb-0.5">4. Status Awal</label>
+            <label class="font-black text-[#1B1B30] block mb-0.5">4. Status Awal</label>
             <select id="newStatus" class="liquid-input p-2 rounded-xl w-full text-xs font-black">
               <option value="di kotak">📦 di kotak</option>
               <option value="Selesai masuk kotak">✅ Selesai masuk kotak</option>
@@ -609,10 +690,10 @@
           </div>
 
           <div>
-            <label class="font-black text-[#2B1D96] block mb-0.5">6. Foto</label>
-            <div class="border-2 border-dashed border-[#7676D5] p-2.5 text-center rounded-2xl relative bg-white/70">
+            <label class="font-black text-[#1B1B30] block mb-0.5">6. Foto</label>
+            <div class="border-2 border-dashed border-[#B9A7F5] p-2.5 text-center rounded-2xl relative bg-white/70">
               <input type="file" id="newFoto" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept="image/*" onchange="handlePhotoUpload(event, 'new')">
-              <span class="text-[#2B1D96] font-black text-xs">📸 Ambil / Pilih Foto</span>
+              <span class="text-[#1B1B30] font-black text-xs">📸 Ambil / Pilih Foto</span>
               <img id="previewNew" class="mt-1.5 mx-auto rounded-xl hidden max-h-24 object-contain shadow">
             </div>
           </div>
@@ -627,8 +708,8 @@
 
     <!-- CUSTOM LIQUID GLASS DIALOG -->
     <div id="customDialogModal" class="fixed inset-0 bg-[#1a1446]/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
-      <div class="liquid-glass bg-white/95 w-full max-w-sm rounded-3xl p-5 shadow-2xl space-y-3 border-2 border-[#53339E]">
-        <h3 id="dlgTitle" class="font-black text-sm text-[#2B1D96]">💡 Informasi</h3>
+      <div class="liquid-glass bg-white/95 w-full max-w-sm rounded-3xl p-5 shadow-2xl space-y-3 border-2 border-[#7C4DEA]">
+        <h3 id="dlgTitle" class="font-black text-sm text-[#1B1B30]">💡 Informasi</h3>
         <p id="dlgMessage" class="text-xs font-bold text-slate-700 whitespace-pre-line leading-relaxed"></p>
         <div id="dlgInputWrap" class="hidden pt-1">
           <input type="text" id="dlgInput" class="liquid-input p-2.5 rounded-xl w-full text-xs font-extrabold">
@@ -648,9 +729,9 @@
 
     <!-- POPUP HORE -->
     <div id="horeToast" class="fixed inset-0 pointer-events-none hidden z-50 flex items-center justify-center p-4">
-      <div class="hore-anim liquid-glass bg-white/95 border-2 border-[#53339E] px-6 py-5 rounded-3xl shadow-2xl text-center max-w-xs">
-        <div class="text-4xl mb-1.5">🎉🎺✨</div>
-        <h3 class="text-xl font-black text-[#2B1D96]">HORE!</h3>
+      <div class="hore-anim liquid-glass bg-white/95 border-2 border-[#7C4DEA] px-6 py-5 rounded-3xl shadow-2xl text-center max-w-xs">
+        <div class="text-6xl mb-1.5 leading-none">🎉</div>
+        <h3 class="text-xl font-black text-[#1B1B30]">HORE!</h3>
         <p id="horeText" class="text-xs font-extrabold text-slate-700 mt-1"></p>
       </div>
     </div>
@@ -664,7 +745,7 @@
     let lastWriteAt = 0;
 
     function callServer(action, payload, callback, errCallback) {
-      if (action !== 'getAllData') lastWriteAt = Date.now();
+      if (action !== 'getAllData' && action !== 'getVersion') lastWriteAt = Date.now();
       fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -748,16 +829,39 @@
 
     const TRANSPORT_STEPS = [
       { key: 'Tidak Dibawa', icon: '🏠', label: 'Tidak Dibawa (Gudang)', bg: 'bg-slate-200 text-slate-800' },
-      { key: 'Siap ke Gedung', icon: '🚚', label: 'Siap ke Gedung', bg: 'bg-[#CADDF2] text-[#2B1D96]' },
-      { key: 'Diangkut ke Gedung', icon: '🛣️', label: 'Diangkut ke Gedung', bg: 'bg-[#5BAAD2] text-white' },
-      { key: 'Tiba di Gedung', icon: '🏢', label: 'Tiba di Gedung', bg: 'bg-[#53339E] text-white' },
+      { key: 'Siap ke Gedung', icon: '🚚', label: 'Siap ke Gedung', bg: 'bg-[#E9E3FF] text-[#1B1B30]' },
+      { key: 'Diangkut ke Gedung', icon: '🛣️', label: 'Diangkut ke Gedung', bg: 'bg-[#2DD4BF] text-white' },
+      { key: 'Tiba di Gedung', icon: '🏢', label: 'Tiba di Gedung', bg: 'bg-[#7C4DEA] text-white' },
       { key: 'Siap ke Gudang', icon: '📦', label: 'Siap ke Gudang Balai', bg: 'bg-amber-500 text-white' },
-      { key: 'Diangkut ke Gudang', icon: '🛻', label: 'Sedang Diangkut ke Gudang', bg: 'bg-[#1E598F] text-white' },
+      { key: 'Diangkut ke Gudang', icon: '🛻', label: 'Sedang Diangkut ke Gudang', bg: 'bg-[#0E9F8E] text-white' },
       { key: 'Tiba di Gudang', icon: '✅', label: 'Tiba di Gudang (Selesai)', bg: 'bg-emerald-600 text-white' }
     ];
 
+    const LOCAL_CACHE_KEY = 'av_data_cache_v1';
+    let dataVersion = null;
+    let syncTick = 0;
+
+    function readLocalCache() {
+      try {
+        const raw = localStorage.getItem(LOCAL_CACHE_KEY);
+        const obj = raw ? JSON.parse(raw) : null;
+        return (obj && obj.items && obj.sheets) ? obj : null;
+      } catch (e) { return null; }
+    }
+    function writeLocalCache(res) {
+      try { localStorage.setItem(LOCAL_CACHE_KEY, JSON.stringify(res)); } catch (e) {}
+    }
+
     window.onload = () => {
-      loadDataFromServer(false);
+      initDropdowns();
+      // Tampilkan data terakhir dari HP seketika, lalu segarkan diam-diam di latar belakang
+      const cached = readLocalCache();
+      if (cached) {
+        applyServerData(cached);
+        loadDataFromServer(false, null, true);
+      } else {
+        loadDataFromServer(false);
+      }
       setInterval(() => {
         if (!isBusy && document.hidden === false) {
           silentBackgroundSync();
@@ -794,16 +898,8 @@
         .replace(/'/g, '&#39;');
     }
 
-    function applyServerData(res, callback) {
-      isBusy = false;
-      inventoryData = res.items || [];
-      sheetList = res.sheets || [];
-      boxTransport = res.boxTransport || {};
-      
-      if (res.spreadsheetUrl) {
-        document.getElementById('btnLihatTabel').href = res.spreadsheetUrl;
-      }
-      
+    function rerenderAll() {
+      const ht = document.getElementById('headerTotal'); if (ht) ht.innerText = inventoryData.length;
       populateDropdowns();
       runSearch();
       renderManageBoxList();
@@ -811,26 +907,74 @@
       renderTagihanPetugas();
       renderDaftarPeminjam();
       renderDaftarPenginput();
-      
+
       if (currentItem && !document.getElementById('detailCard').classList.contains('hidden')) {
         const refreshed = inventoryData.find(x => x.sheetName === currentItem.sheetName && x.nama === currentItem.nama);
         if (refreshed) showDetailCard(refreshed, true);
       }
-      
+    }
+
+    function applyServerData(res, callback) {
+      isBusy = false;
+      inventoryData = res.items || [];
+      sheetList = res.sheets || [];
+      boxTransport = res.boxTransport || {};
+      if (res.version !== undefined && res.version !== null) dataVersion = String(res.version);
+      writeLocalCache(res);
+
+      if (res.spreadsheetUrl) {
+        document.getElementById('btnLihatTabel').href = res.spreadsheetUrl;
+      }
+
+      rerenderAll();
       showLoading(false);
       if (callback) callback();
     }
 
-    function loadDataFromServer(forceRefresh, callback) {
-      showLoading(true);
-      callServer('getAllData', { forceRefresh: Boolean(forceRefresh) }, res => applyServerData(res, callback));
+    // Ubah data di layar SEKETIKA (tanpa menunggu server), lalu server menyusul di latar belakang
+    function todayStr() {
+      const d = new Date();
+      return String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' + d.getFullYear();
+    }
+    function kondisiLokal(status, catatan) {
+      const g = ((status || '') + ' ' + (catatan || '')).toLowerCase();
+      if (g.includes('rusak')) return 'Rusak';
+      if (g.includes('hilang')) return 'Hilang';
+      return 'Baik';
+    }
+    function nowTransportStr() {
+      const d = new Date();
+      const p = n => String(n).padStart(2, '0');
+      return p(d.getDate()) + '/' + p(d.getMonth() + 1) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+    }
+    function optimisticPatch(item, patch) {
+      if (!item) return;
+      Object.assign(item, patch);
+      rerenderAll();
     }
 
+    function loadDataFromServer(forceRefresh, callback, quiet) {
+      if (!quiet) showLoading(true);
+      callServer('getAllData', { forceRefresh: Boolean(forceRefresh) }, res => applyServerData(res, callback), quiet ? () => {} : undefined);
+    }
+
+    // Sinkronisasi ringan: tanya "versi data" dulu (sangat cepat), ambil data penuh hanya jika berubah.
+    // Setiap ~3 menit tetap ambil data penuh agar perubahan manual di Google Sheet ikut terbaca.
     function silentBackgroundSync() {
       const startedAt = lastWriteAt;
-      callServer('getAllData', { forceRefresh: false }, res => {
-        // Buang hasil sync lama bila ada penyimpanan baru saat permintaan ini berjalan
-        if (!isBusy && startedAt === lastWriteAt) applyServerData(res);
+      syncTick++;
+      if (syncTick % 9 === 0) {
+        callServer('getAllData', { forceRefresh: true }, res => {
+          if (!isBusy && startedAt === lastWriteAt) applyServerData(res);
+        }, () => {});
+        return;
+      }
+      callServer('getVersion', {}, v => {
+        if (isBusy || startedAt !== lastWriteAt) return;
+        if (dataVersion !== null && String(v.version) === dataVersion) return;
+        callServer('getAllData', { forceRefresh: false }, res => {
+          if (!isBusy && startedAt === lastWriteAt) applyServerData(res);
+        }, () => {});
       }, () => {});
     }
 
@@ -859,7 +1003,7 @@
           nav.className = 'py-2 px-0.5 rounded-2xl flex flex-col items-center justify-center gap-0.5 btn-primary transition truncate';
         } else {
           sec.classList.add('hidden');
-          nav.className = 'py-2 px-0.5 rounded-2xl flex flex-col items-center justify-center gap-0.5 text-[#2B1D96] hover:bg-white/40 transition truncate';
+          nav.className = 'py-2 px-0.5 rounded-2xl flex flex-col items-center justify-center gap-0.5 text-[#1B1B30] hover:bg-white/40 transition truncate';
         }
       });
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -875,7 +1019,7 @@
           btn.className = 'py-2 rounded-xl text-xs font-black btn-primary truncate';
         } else {
           view.classList.add('hidden');
-          btn.className = 'py-2 rounded-xl text-xs font-extrabold text-[#2B1D96] truncate';
+          btn.className = 'py-2 rounded-xl text-xs font-extrabold text-[#1B1B30] truncate';
         }
       });
     }
@@ -883,19 +1027,36 @@
     function getStatusBadgeHtml(item) {
       let badge = '';
       if (item.status === 'dipakai di gedung') {
-        badge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-[#53339E] text-white truncate">⚡ Dipakai</span>`;
+        badge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#7C4DEA] text-white">Dipakai</span>`;
       } else if (item.status === 'Selesai masuk kotak') {
-        badge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-600 text-white truncate">✅ Selesai</span>`;
+        badge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-600 text-white">Selesai</span>`;
       } else {
-        badge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-[#1E598F] text-white truncate">📦 Di Kotak</span>`;
+        badge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#0E9F8E] text-white">Di Kotak</span>`;
       }
       if (item.kondisi !== 'Baik') {
-        badge += ` <span class="px-1.5 py-0.5 rounded-full text-[10px] font-black bg-amber-500 text-white truncate">⚠️ ${escapeHtml(item.kondisi)}</span>`;
+        badge += `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500 text-white">${escapeHtml(item.kondisi)}</span>`;
       }
       if (item.originBox) {
-        badge += ` <span class="px-1.5 py-0.5 rounded-full text-[9px] font-black bg-amber-200 text-amber-950 block mt-0.5 truncate">🔄 Titipan</span>`;
+        badge += `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">Titipan</span>`;
       }
       return badge;
+    }
+
+    // Isi baris barang: nama (tebal), lalu kotak • peminjam (beda warna/ukuran), lalu lencana status di baris sendiri
+    const DOT_SEP = '<span class="mx-1.5 text-[#C4B5FD]">•</span>';
+    function infoInner(it, opts) {
+      opts = opts || {};
+      const parts = [];
+      if (opts.box !== false) parts.push(`<span class="font-semibold text-[#0E9F8E]">${escapeHtml(it.sheetName)}</span>`);
+      (opts.before || []).forEach(t => parts.push(`<span class="font-medium text-[#6B6B85]">${escapeHtml(t)}</span>`));
+      if (it.peminjam && it.peminjam !== '-') parts.push(`<span class="font-bold text-[#7C4DEA]">${escapeHtml(it.peminjam)}</span>`);
+      if (opts.pic && it.petugasPinjam && it.petugasPinjam !== '-') parts.push(`<span class="font-medium text-[#6B6B85]">PIC ${escapeHtml(it.petugasPinjam)}</span>`);
+      (opts.after || []).forEach(t => parts.push(t));
+      return `
+        <div class="text-[13px] leading-snug font-extrabold text-[#1B1B30] break-words">${opts.num ? escapeHtml(opts.num) + '. ' : ''}${escapeHtml(it.nama)}</div>
+        ${parts.length ? `<div class="text-[11px] leading-snug mt-0.5 break-words">${parts.join(DOT_SEP)}</div>` : ''}
+        ${opts.badges === false ? '' : `<div class="mt-1.5 flex flex-wrap gap-1">${getStatusBadgeHtml(it)}</div>`}
+      `;
     }
 
     function levenshtein(a, b) {
@@ -958,23 +1119,10 @@
       }
 
       pool.slice(0, 45).forEach(item => {
-        const hasPhoto = item.foto && item.foto.startsWith('http');
         const div = document.createElement('div');
-        div.className = 'liquid-subcard p-3 rounded-2xl cursor-pointer hover:bg-white/80 transition flex justify-between items-center gap-2 truncate';
+        div.className = 'liquid-subcard p-3 rounded-2xl cursor-pointer hover:bg-white/80 transition';
         div.onclick = () => showDetailCard(item);
-        div.innerHTML = `
-          <div class="min-w-0 flex-1 truncate">
-            <div class="font-black text-xs text-[#2B1D96] truncate flex items-center gap-1">
-              <span class="shrink-0">${hasPhoto ? '📸' : '📦'}</span>
-              <span class="truncate">${escapeHtml(item.nama)}</span>
-            </div>
-            <div class="text-[11px] font-bold text-[#1E598F] mt-0.5 truncate">
-              📦 <b>${escapeHtml(item.sheetName)}</b>
-              ${item.peminjam !== '-' ? ` • 👤 <b class="text-[#53339E]">${escapeHtml(item.peminjam)}</b>` : ''}
-            </div>
-          </div>
-          <div class="shrink-0 text-right">${getStatusBadgeHtml(item)}</div>
-        `;
+        div.innerHTML = infoInner(item);
         container.appendChild(div);
       });
     }
@@ -999,13 +1147,13 @@
       const banner = document.getElementById('detStatusBanner');
       if (item.status === 'dipakai di gedung') {
         banner.innerText = '⚡ dipakai di gedung (' + item.peminjam + ')';
-        banner.className = 'p-2.5 rounded-2xl text-center font-black text-xs bg-[#53339E] text-white truncate';
+        banner.className = 'p-2.5 rounded-2xl text-center font-black text-xs bg-[#7C4DEA] text-white truncate';
       } else if (item.status === 'Selesai masuk kotak') {
         banner.innerText = '✅ Selesai masuk kotak';
         banner.className = 'p-2.5 rounded-2xl text-center font-black text-xs bg-emerald-600 text-white truncate';
       } else {
         banner.innerText = '📦 di kotak';
-        banner.className = 'p-2.5 rounded-2xl text-center font-black text-xs bg-[#1E598F] text-white truncate';
+        banner.className = 'p-2.5 rounded-2xl text-center font-black text-xs bg-[#0E9F8E] text-white truncate';
       }
 
       document.getElementById('detTabel').innerText = item.sheetName;
@@ -1068,9 +1216,11 @@
     function executeReturnTitipan(item, penginputName) {
       isBusy = true;
       showLoading(true);
-      callServer('returnTitipanToOrigin', { currentSheetName: item.sheetName, row: item.row, expectedNamaAlat: item.nama, penginputName: penginputName }, res => {
+      const payloadTitip = { currentSheetName: item.sheetName, row: item.row, expectedNamaAlat: item.nama, penginputName: penginputName };
+      document.getElementById('detailCard').classList.add('hidden');
+      optimisticPatch(item, { sheetName: item.originBox, originBox: '' });
+      callServer('returnTitipanToOrigin', payloadTitip, res => {
         celebrateHore(res.message);
-        document.getElementById('detailCard').classList.add('hidden');
         applyServerData(res.freshData);
       });
     }
@@ -1123,33 +1273,25 @@
       items.forEach((it, idx) => {
         const hasPhoto = it.foto && it.foto.startsWith('http');
         const div = document.createElement('div');
-        div.className = 'liquid-subcard p-3 rounded-2xl flex justify-between items-center gap-2 truncate';
-        
+        div.className = 'liquid-subcard p-3 rounded-2xl flex justify-between items-center gap-2';
+
         const infoDiv = document.createElement('div');
-        infoDiv.className = 'min-w-0 flex-1 truncate';
-        infoDiv.innerHTML = `
-          <div class="font-black text-xs text-[#2B1D96] truncate">
-            ${idx + 1}. ${escapeHtml(it.nama)} ${hasPhoto ? '📸' : ''}
-          </div>
-          <div class="text-[11px] font-bold text-slate-600 mt-0.5 truncate">
-            Baris ${it.row} ${it.peminjam !== '-' ? `• 👤 <b>${escapeHtml(it.peminjam)}</b>` : ''}
-          </div>
-          <div class="mt-1">${getStatusBadgeHtml(it)}</div>
-        `;
+        infoDiv.className = 'min-w-0 flex-1';
+        infoDiv.innerHTML = infoInner(it, { box: false, num: String(idx + 1), before: ['Baris ' + it.row] });
         
         const btnWrap = document.createElement('div');
         btnWrap.className = 'flex flex-col gap-1 shrink-0';
 
         const btnEdit = document.createElement('button');
         btnEdit.className = 'btn-ocean px-3.5 py-1.5 rounded-xl text-[11px] font-black truncate';
-        btnEdit.innerText = '🛠️ Edit';
+        btnEdit.innerText = 'Edit';
         btnEdit.onclick = () => openEditModal(it);
         btnWrap.appendChild(btnEdit);
 
         if (it.originBox) {
           const btnPulang = document.createElement('button');
           btnPulang.className = 'bg-amber-600 text-white px-2 py-1 rounded-xl text-[10px] font-black truncate';
-          btnPulang.innerText = '↩️ Ke Asal';
+          btnPulang.innerText = 'Ke Asal';
           btnPulang.onclick = () => returnTitipanItem(it);
           btnWrap.appendChild(btnPulang);
         }
@@ -1177,7 +1319,7 @@
       TRANSPORT_STEPS.forEach(st => {
         const isCurrent = st.key === curStatus;
         const btn = document.createElement('button');
-        btn.className = `w-full p-2.5 rounded-xl text-left font-black text-xs flex justify-between items-center transition border-2 truncate ${isCurrent ? 'border-[#2B1D96] ' + st.bg : 'border-white bg-white/80 text-[#2B1D96]'}`;
+        btn.className = `w-full p-2.5 rounded-xl text-left font-black text-xs flex justify-between items-center transition border-2 truncate ${isCurrent ? 'border-[#1B1B30] ' + st.bg : 'border-white bg-white/80 text-[#1B1B30]'}`;
         btn.innerHTML = `
           <span class="truncate">${st.icon} ${st.label}</span>
           ${isCurrent ? '<span class="text-[9px] px-2 py-0.5 rounded-full bg-black/20 shrink-0">Aktif</span>' : '<span class="text-[10px] shrink-0">Pilih</span>'}
@@ -1214,6 +1356,14 @@
         closeModal('transportModal');
         showLoading(true);
 
+        boxTransport[boxName] = { status: newStatus, updater: updater, updatedAt: nowTransportStr(), history: '' };
+        if (isTibaGudang) {
+          inventoryData.forEach(x => {
+            if (x.sheetName === boxName) Object.assign(x, { status: 'di kotak', peminjam: '-', petugasPinjam: '-', tglPinjam: '-', tglKembali: '-' });
+          });
+        }
+        rerenderAll();
+
         callServer('updateBoxTransportStatus', { boxName: boxName, newStatus: newStatus, updaterName: updater }, res => {
           celebrateHore(res.message);
           applyServerData(res.freshData);
@@ -1231,6 +1381,45 @@
       }
     }
 
+    function promptDeleteCurrentBox() {
+      if (isBusy) return;
+      const boxName = document.getElementById('manageBoxSelect').value;
+      if (!boxName) return;
+      const jumlah = inventoryData.filter(x => x.sheetName === boxName).length;
+      const namaTampil = boxName.trim();
+      showAppPrompt(
+        'HAPUS KOTAK "' + namaTampil + '" beserta ' + jumlah + ' alat di dalamnya?\n\nTindakan ini permanen dari aplikasi. Untuk menyetujui, ketik nama kotaknya persis di bawah ini:',
+        '',
+        (typed) => {
+          if (typed !== namaTampil) {
+            showAppAlert('Nama yang diketik tidak sama. Kotak tidak dihapus.', '🗑️ Dibatalkan');
+            return;
+          }
+          const masihDipakai = inventoryData.filter(x => x.sheetName === boxName && x.status === 'dipakai di gedung');
+          if (masihDipakai.length > 0) {
+            showAppAlert('Kotak belum bisa dihapus. Masih ada alat berstatus "dipakai di gedung":\n\n' + masihDipakai.map(u => '• ' + u.nama + ' (' + u.peminjam + ')').join('\n') + '\n\nKembalikan atau pindahkan alat tersebut dulu.', '⚠️ Kotak Belum Bisa Dihapus');
+            return;
+          }
+          if (sheetList.length <= 1) {
+            showAppAlert('Ini satu-satunya kotak yang tersisa, tidak bisa dihapus.', '⚠️ Tidak Bisa Dihapus');
+            return;
+          }
+          isBusy = true;
+          showLoading(true);
+          sheetList = sheetList.filter(n => n !== boxName);
+          inventoryData = inventoryData.filter(x => x.sheetName !== boxName);
+          inventoryData.forEach(x => { if (x.originBox === boxName.trim()) x.originBox = ''; });
+          delete boxTransport[boxName];
+          rerenderAll();
+          callServer('deleteBoxSheet', { boxName: boxName }, res => {
+            celebrateHore(res.message);
+            applyServerData(res.freshData);
+          });
+        },
+        '🗑️ Hapus Kotak'
+      );
+    }
+
     function promptRenameCurrentBox() {
       if (isBusy) return;
       const oldName = document.getElementById('manageBoxSelect').value;
@@ -1239,6 +1428,15 @@
         if (!newName || newName === oldName) return;
         isBusy = true;
         showLoading(true);
+        sheetList = sheetList.map(n => n === oldName ? newName : n);
+        if (boxTransport[oldName]) { boxTransport[newName] = boxTransport[oldName]; delete boxTransport[oldName]; }
+        inventoryData.forEach(x => {
+          if (x.sheetName === oldName) { x.sheetName = newName; x.id = newName + '__ROW__' + x.row; }
+          if (x.originBox === oldName.trim()) x.originBox = newName;
+        });
+        rerenderAll();
+        document.getElementById('manageBoxSelect').value = newName;
+        renderManageBoxList();
         callServer('renameBoxSheet', { oldName: oldName, newName: newName }, res => {
           celebrateHore(res.message);
           applyServerData(res.freshData);
@@ -1291,6 +1489,8 @@
       const targetSheet = currentItem.sheetName;
       const targetName = currentItem.nama;
 
+      optimisticPatch(currentItem, { status: 'dipakai di gedung', peminjam: peminjam, petugasPinjam: petugas, catatan: catatan, tglPinjam: todayStr(), tglKembali: '-' });
+
       callServer('updateItemData', {
         payload: {
           oldSheetName: currentItem.sheetName,
@@ -1319,6 +1519,8 @@
       showLoading(true);
       const targetSheet = currentItem.sheetName;
       const targetName = currentItem.nama;
+
+      optimisticPatch(currentItem, { status: 'Selesai masuk kotak', tglKembali: todayStr() });
 
       callServer('quickReturnItem', { sheetName: currentItem.sheetName, row: currentItem.row, expectedNamaAlat: currentItem.nama }, res => {
         celebrateHore(res.message);
@@ -1382,12 +1584,23 @@
       closeModal('editModal');
       showLoading(true);
 
+      const orig = { sheetName: currentItem.sheetName, row: currentItem.row, nama: currentItem.nama, originBox: currentItem.originBox };
+      const patchEdit = { nama: namaAlat, status: status, peminjam: peminjam, petugasPinjam: petugas, catatan: catatan, penginput: penginput, kondisi: kondisiLokal(status, catatan) };
+      if (status === 'dipakai di gedung') { patchEdit.tglPinjam = todayStr(); patchEdit.tglKembali = '-'; }
+      else if (status === 'Selesai masuk kotak') { patchEdit.tglKembali = todayStr(); }
+      if (newSheet !== orig.sheetName) {
+        patchEdit.sheetName = newSheet;
+        const asal = isTitipan ? (orig.originBox || orig.sheetName) : '';
+        patchEdit.originBox = asal === newSheet ? '' : asal;
+      }
+      optimisticPatch(currentItem, patchEdit);
+
       callServer('updateItemData', {
         payload: {
-          oldSheetName: currentItem.sheetName,
+          oldSheetName: orig.sheetName,
           newSheetName: newSheet,
-          row: currentItem.row,
-          originalNamaAlat: currentItem.nama,
+          row: orig.row,
+          originalNamaAlat: orig.nama,
           namaAlat: namaAlat,
           status: status,
           peminjam: peminjam,
@@ -1415,10 +1628,14 @@
         isBusy = true;
         closeModal('editModal');
         showLoading(true);
-        callServer('deleteItemData', { sheetName: currentItem.sheetName, row: currentItem.row, expectedNamaAlat: currentItem.nama }, res => {
+        const delPayload = { sheetName: currentItem.sheetName, row: currentItem.row, expectedNamaAlat: currentItem.nama };
+        const delRef = currentItem;
+        document.getElementById('detailCard').classList.add('hidden');
+        currentItem = null;
+        inventoryData = inventoryData.filter(x => x !== delRef);
+        rerenderAll();
+        callServer('deleteItemData', delPayload, res => {
           celebrateHore(res.message);
-          document.getElementById('detailCard').classList.add('hidden');
-          currentItem = null;
           applyServerData(res.freshData);
         });
       }, '🗑️ Hapus Alat');
@@ -1454,6 +1671,7 @@
       newSheetSelect.innerHTML += `<option value="__NEW__">➕ Buat Kotak Baru...</option>`;
 
       filterKotak.value = prevFilter;
+      if (filterKotak.value !== prevFilter) filterKotak.value = 'ALL'; // kotak terpilih sudah dihapus/diganti nama
       if (sheetList.includes(prevManage)) manageBox.value = prevManage;
 
       onNewSheetChange();
@@ -1503,7 +1721,8 @@
     function submitNewItem() {
       if (isBusy) return;
       let targetSheet = document.getElementById('newSheetSelect').value;
-      if (targetSheet === '__NEW__') {
+      const isNewBox = targetSheet === '__NEW__';
+      if (isNewBox) {
         targetSheet = document.getElementById('newBoxCustomName').value.trim();
         if (!targetSheet) return showAppAlert('Ketik nama kotak baru!');
       }
@@ -1520,8 +1739,21 @@
       closeModal('addModal');
       showLoading(true);
 
+      if (isNewBox && !sheetList.includes(targetSheet)) {
+        sheetList.push(targetSheet);
+        boxTransport[targetSheet] = { status: 'Tidak Dibawa', updater: '-', updatedAt: '-', history: '' };
+      }
+      const itemKe = inventoryData.filter(x => x.sheetName === targetSheet).length + 1;
+      inventoryData.push({
+        id: targetSheet + '__ROW__tmp', sheetName: targetSheet, row: 0, colName: 'A', itemNumber: itemKe,
+        nama: namaAlat, peminjam: '-', status: status, kondisi: kondisiLokal(status, catatan),
+        tglPinjam: '-', tglKembali: '-', foto: '', catatan: catatan, penginput: penginput, petugasPinjam: '-', originBox: ''
+      });
+      rerenderAll();
+
       callServer('addNewData', {
         payload: {
+          createNew: isNewBox,
           sheetName: targetSheet,
           namaAlat: namaAlat,
           penginput: penginput,
@@ -1561,18 +1793,14 @@
         const dipakaiCount = boxItems.filter(x => x.status === 'dipakai di gedung' && x.kondisi === 'Baik').length;
 
         const div = document.createElement('div');
-        div.className = 'liquid-subcard p-3 rounded-2xl flex justify-between items-center gap-2 cursor-pointer hover:bg-white/80 transition truncate';
+        div.className = 'liquid-subcard p-3 rounded-2xl cursor-pointer hover:bg-white/80 transition';
         div.onclick = () => openTransportModal(sName);
         div.innerHTML = `
-          <div class="min-w-0 flex-1 truncate">
-            <strong class="text-xs font-black text-[#2B1D96] block truncate">📦 ${escapeHtml(sName)}</strong>
-            <span class="text-[11px] font-bold text-slate-600 truncate block">
-              ${boxItems.length} alat ${dipakaiCount > 0 ? `• <b class="text-rose-600">${dipakaiCount} dipakai</b>` : '• <b class="text-emerald-700">Lengkap</b>'}
-            </span>
+          <div class="text-[13px] leading-snug font-extrabold text-[#1B1B30] break-words">${escapeHtml(sName)}</div>
+          <div class="text-[11px] leading-snug mt-0.5">
+            <span class="font-medium text-[#6B6B85]">${boxItems.length} alat</span>${DOT_SEP}${dipakaiCount > 0 ? `<span class="font-bold text-rose-600">${dipakaiCount} dipakai</span>` : '<span class="font-bold text-emerald-700">Lengkap</span>'}
           </div>
-          <span class="px-2.5 py-1.5 rounded-xl text-[10px] font-black shrink-0 shadow-sm ${meta.bg} truncate">
-            ${meta.icon} ${escapeHtml(meta.key)}
-          </span>
+          <div class="mt-1.5"><span class="inline-block px-2.5 py-1 rounded-full text-[10px] font-bold ${meta.bg}">${escapeHtml(meta.key)}</span></div>
         `;
         elTrans.appendChild(div);
       });
@@ -1586,16 +1814,16 @@
       } else {
         titipan.forEach(it => {
           const div = document.createElement('div');
-          div.className = 'liquid-subcard p-3 rounded-2xl flex justify-between items-center gap-2 text-xs truncate';
+          div.className = 'liquid-subcard p-3 rounded-2xl flex justify-between items-center gap-2';
           div.innerHTML = `
-            <div class="min-w-0 flex-1 truncate">
-              <strong class="font-black text-[#2B1D96] block truncate">${escapeHtml(it.nama)}</strong>
-              <span class="text-[11px] font-bold text-amber-900 truncate block">Di: <b>${escapeHtml(it.sheetName)}</b> ➔ Asal: <b>${escapeHtml(it.originBox)}</b></span>
+            <div class="min-w-0 flex-1">
+              <div class="text-[13px] leading-snug font-extrabold text-[#1B1B30] break-words">${escapeHtml(it.nama)}</div>
+              <div class="text-[11px] leading-snug mt-0.5 break-words"><span class="font-semibold text-[#0E9F8E]">${escapeHtml(it.sheetName)}</span>${DOT_SEP}<span class="font-medium text-amber-700">titipan dari ${escapeHtml(it.originBox)}</span></div>
             </div>
           `;
           const btn = document.createElement('button');
           btn.className = 'bg-amber-600 text-white font-black px-3 py-1.5 rounded-xl text-[10px] shrink-0 shadow';
-          btn.innerText = '↩️ Pulang';
+          btn.innerText = 'Pulang';
           btn.onclick = () => returnTitipanItem(it);
           div.appendChild(btn);
           elTitipan.appendChild(div);
@@ -1619,7 +1847,7 @@
         keysPeminjam.forEach(nama => {
           const items = mapPeminjam[nama];
           const div = document.createElement('div');
-          div.className = 'liquid-subcard p-3 rounded-2xl flex justify-between items-center cursor-pointer text-xs truncate';
+          div.className = 'liquid-subcard p-3 rounded-2xl flex justify-between items-center gap-2 cursor-pointer';
           div.onclick = () => {
             switchTab('tim');
             switchSubTim('peminjam');
@@ -1627,11 +1855,11 @@
             renderDaftarPeminjam();
           };
           div.innerHTML = `
-            <div class="min-w-0 flex-1 truncate">
-              <strong class="font-black text-[#2B1D96] truncate block">👤 ${escapeHtml(nama)}</strong>
-              <span class="text-[11px] font-bold text-slate-600 truncate block">PIC: ${escapeHtml(items[0].petugasPinjam)}</span>
+            <div class="min-w-0 flex-1">
+              <div class="text-[13px] leading-snug font-extrabold text-[#7C4DEA] break-words">${escapeHtml(nama)}</div>
+              <div class="text-[11px] leading-snug mt-0.5 font-medium text-[#6B6B85]">PIC ${escapeHtml(items[0].petugasPinjam)}</div>
             </div>
-            <span class="bg-[#53339E] text-white font-black text-xs px-2.5 py-1 rounded-xl shrink-0">${items.length} Alat 👉</span>
+            <span class="bg-[#7C4DEA] text-white font-bold text-[11px] px-2.5 py-1 rounded-full shrink-0">${items.length} Alat</span>
           `;
           elPeminjam.appendChild(div);
         });
@@ -1646,15 +1874,9 @@
       } else {
         masalah.forEach(it => {
           const div = document.createElement('div');
-          div.className = 'liquid-subcard p-3 rounded-2xl flex justify-between items-center cursor-pointer text-xs truncate';
+          div.className = 'liquid-subcard p-3 rounded-2xl cursor-pointer';
           div.onclick = () => openEditModal(it);
-          div.innerHTML = `
-            <div class="min-w-0 flex-1 truncate">
-              <strong class="font-black text-[#2B1D96] truncate block">${escapeHtml(it.nama)}</strong>
-              <span class="text-[11px] font-bold text-slate-600 truncate block">📦 ${escapeHtml(it.sheetName)} • <b class="text-rose-700">${escapeHtml(it.catatan)}</b></span>
-            </div>
-            <span class="px-2.5 py-1 rounded-full text-[10px] font-black bg-amber-500 text-white shrink-0">${escapeHtml(it.kondisi)}</span>
-          `;
+          div.innerHTML = infoInner(it, { after: ['<span class="font-semibold text-rose-700">' + escapeHtml(it.catatan) + '</span>'] });
           elMasalah.appendChild(div);
         });
       }
@@ -1699,6 +1921,7 @@
       if (!item) return;
       isBusy = true;
       showLoading(true);
+      optimisticPatch(item, { status: 'Selesai masuk kotak', tglKembali: todayStr() });
       callServer('quickReturnItem', { sheetName: item.sheetName, row: item.row, expectedNamaAlat: item.nama }, res => {
         celebrateHore(res.message);
         applyServerData(res.freshData);
@@ -1744,8 +1967,8 @@
         const headerDiv = document.createElement('div');
         headerDiv.className = 'flex justify-between items-center border-b border-slate-300 pb-1.5';
         headerDiv.innerHTML = `
-          <h4 class="text-xs font-black text-[#2B1D96] truncate">👤 ${escapeHtml(clientName)}</h4>
-          <span class="bg-[#53339E] text-white font-black text-xs px-2.5 py-0.5 rounded-full shrink-0">${items.length} Alat</span>
+          <h4 class="text-[13px] font-extrabold text-[#7C4DEA] break-words min-w-0">${escapeHtml(clientName)}</h4>
+          <span class="bg-[#7C4DEA] text-white font-bold text-[11px] px-2.5 py-0.5 rounded-full shrink-0">${items.length} Alat</span>
         `;
         card.appendChild(headerDiv);
 
@@ -1753,16 +1976,16 @@
         listWrap.className = 'space-y-1.5';
         items.forEach(it => {
           const rowDiv = document.createElement('div');
-          rowDiv.className = 'flex justify-between items-center bg-white/80 p-2.5 rounded-xl text-xs gap-2 truncate';
+          rowDiv.className = 'flex justify-between items-center bg-white/80 p-2.5 rounded-xl gap-2';
           rowDiv.innerHTML = `
-            <div class="min-w-0 flex-1 truncate">
-              <strong class="text-[#2B1D96] font-black truncate block">${escapeHtml(it.nama)}</strong>
-              <span class="text-[11px] font-bold text-slate-600">📦 ${escapeHtml(it.sheetName)}</span>
+            <div class="min-w-0 flex-1">
+              <div class="text-[13px] leading-snug font-extrabold text-[#1B1B30] break-words">${escapeHtml(it.nama)}</div>
+              <div class="text-[11px] leading-snug mt-0.5 font-semibold text-[#0E9F8E] break-words">${escapeHtml(it.sheetName)}</div>
             </div>
           `;
           const btnRet = document.createElement('button');
           btnRet.className = 'bg-emerald-600 text-white font-black px-3 py-1.5 rounded-xl text-xs shrink-0 shadow';
-          btnRet.innerText = '✅ Masuk Kotak';
+          btnRet.innerText = 'Masuk Kotak';
           btnRet.onclick = () => returnItemById(it.id);
           rowDiv.appendChild(btnRet);
           listWrap.appendChild(rowDiv);
@@ -1780,15 +2003,37 @@
       });
     }
 
+    function copyTextFallback(text) {
+      const ta = document.createElement('textarea');
+      ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); } catch (e) {}
+      document.body.removeChild(ta);
+    }
+
     function copyWaWithHore(text, btnId) {
-      navigator.clipboard.writeText(text).then(() => {
-        celebrateHore('Disalin ke Clipboard!');
-        const btn = document.getElementById(btnId);
-        if (btn) {
-          btn.className = "w-full bg-emerald-600 text-white font-black py-2.5 rounded-xl text-xs shadow-md flex items-center justify-center gap-1.5";
-          btn.innerHTML = `<span>✅</span> <span>Siap Tempel di WA</span>`;
+      const btn = document.getElementById(btnId);
+      // Berubah hijau + glitter SEKETIKA saat ditekan
+      if (btn) {
+        if (!btn.dataset.orig) { btn.dataset.orig = btn.innerHTML; btn.dataset.origCls = btn.className; }
+        btn.className = 'w-full btn-glitter font-black py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5';
+        btn.innerHTML = '<span>Siap Ditempel di WA</span>';
+        if (typeof confetti === 'function') {
+          const r = btn.getBoundingClientRect();
+          confetti({ particleCount: 36, spread: 70, startVelocity: 22, ticks: 70, scalar: .7,
+            colors: ['#ffffff', '#FDE68A', '#6EE7B7', '#A78BFA'],
+            origin: { x: (r.left + r.width / 2) / window.innerWidth, y: (r.top + r.height / 2) / window.innerHeight } });
         }
-      });
+        setTimeout(() => {
+          if (btn.dataset.orig) { btn.innerHTML = btn.dataset.orig; btn.className = btn.dataset.origCls; delete btn.dataset.orig; }
+        }, 6000);
+      }
+      const done = () => celebrateHore('Disalin ke Clipboard!');
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done).catch(() => { copyTextFallback(text); done(); });
+      } else {
+        copyTextFallback(text); done();
+      }
     }
 
     function renderDaftarPeminjam() {
@@ -1810,25 +2055,15 @@
         const isDipakai = it.status === 'dipakai di gedung';
         
         const rowDiv = document.createElement('div');
-        rowDiv.className = 'liquid-subcard p-3 rounded-2xl flex justify-between items-center text-xs gap-2 truncate';
-        rowDiv.innerHTML = `
-          <div class="min-w-0 flex-1 truncate">
-            <strong class="text-[#2B1D96] font-black truncate block">${escapeHtml(it.nama)}</strong>
-            <span class="text-[11px] font-bold text-slate-600 truncate block">📦 ${escapeHtml(it.sheetName)} • Status: <b>${escapeHtml(it.status)}</b></span>
-          </div>
-        `;
+        rowDiv.className = 'liquid-subcard p-3 rounded-2xl flex justify-between items-center gap-2';
+        rowDiv.innerHTML = `<div class="min-w-0 flex-1">${infoInner(it, { pic: true })}</div>`;
 
         if (isDipakai) {
           const btn = document.createElement('button');
-          btn.className = 'bg-emerald-600 text-white font-black px-2.5 py-1.5 rounded-xl text-xs shrink-0';
-          btn.innerText = '✅ Masuk Kotak';
+          btn.className = 'bg-emerald-600 text-white font-bold px-2.5 py-1.5 rounded-xl text-xs shrink-0';
+          btn.innerText = 'Masuk Kotak';
           btn.onclick = () => returnItemById(it.id);
           rowDiv.appendChild(btn);
-        } else {
-          const badgeWrap = document.createElement('div');
-          badgeWrap.className = 'shrink-0';
-          badgeWrap.innerHTML = getStatusBadgeHtml(it);
-          rowDiv.appendChild(badgeWrap);
         }
         listEl.appendChild(rowDiv);
       });
@@ -1853,17 +2088,96 @@
       const items = inventoryData.filter(x => x.penginput === nama);
       items.forEach((it, idx) => {
         const div = document.createElement('div');
-        div.className = 'liquid-subcard p-3 rounded-2xl flex justify-between items-center text-xs cursor-pointer truncate';
+        div.className = 'liquid-subcard p-3 rounded-2xl cursor-pointer';
         div.onclick = () => openEditModal(it);
-        div.innerHTML = `
-          <div class="min-w-0 flex-1 truncate">
-            <strong class="text-[#2B1D96] font-black truncate block">${escapeHtml(it.nama)}</strong>
-            <span class="text-[11px] font-bold text-slate-600 truncate block">📦 ${escapeHtml(it.sheetName)} (Baris ${it.row})</span>
-          </div>
-          <div class="shrink-0">${getStatusBadgeHtml(it)}</div>
-        `;
+        div.innerHTML = infoInner(it, { after: ['<span class="font-medium text-[#6B6B85]">Baris ' + it.row + '</span>'] });
         listEl.appendChild(div);
       });
+    }
+
+    // ===== Dropdown kaca (mengganti tampilan <select> bawaan browser) =====
+    const DD_CHEVRON = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7.5l5 5 5-5"/></svg>';
+    let ddOpenPanel = null, ddOpenBtn = null;
+
+    function closeDropdown() {
+      if (ddOpenPanel) ddOpenPanel.remove();
+      if (ddOpenBtn) ddOpenBtn.classList.remove('open');
+      ddOpenPanel = null; ddOpenBtn = null;
+    }
+
+    function enhanceSelect(sel) {
+      if (sel._dd) return;
+      sel._dd = true;
+      const wrap = document.createElement('div');
+      wrap.className = 'dd-wrap';
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = sel.className + ' dd-btn';
+      btn.innerHTML = '<span class="dd-label"></span>' + DD_CHEVRON;
+      const label = btn.querySelector('.dd-label');
+      sel.parentNode.insertBefore(wrap, sel);
+      wrap.appendChild(btn);
+      wrap.appendChild(sel);
+      sel.style.display = 'none';
+
+      const refresh = () => {
+        const o = sel.options[sel.selectedIndex];
+        label.textContent = o ? o.text : '';
+      };
+      ['value', 'selectedIndex'].forEach(prop => {
+        const d = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, prop);
+        Object.defineProperty(sel, prop, {
+          configurable: true,
+          get() { return d.get.call(sel); },
+          set(v) { d.set.call(sel, v); refresh(); }
+        });
+      });
+      new MutationObserver(refresh).observe(sel, { childList: true });
+      refresh();
+
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        if (ddOpenBtn === btn) { closeDropdown(); return; }
+        closeDropdown();
+        const panel = document.createElement('div');
+        panel.className = 'dd-panel';
+        Array.from(sel.options).forEach((o, i) => {
+          const it = document.createElement('div');
+          it.className = 'dd-item' + (i === sel.selectedIndex ? ' sel' : '');
+          it.innerHTML = '<span></span>';
+          it.firstChild.textContent = o.text;
+          it.addEventListener('click', ev => {
+            ev.stopPropagation();
+            sel.selectedIndex = i;
+            sel.dispatchEvent(new Event('change', { bubbles: true }));
+            closeDropdown();
+          });
+          panel.appendChild(it);
+        });
+        document.body.appendChild(panel);
+        const r = btn.getBoundingClientRect();
+        const below = window.innerHeight - r.bottom - 12;
+        const above = r.top - 12;
+        const openUp = below < 200 && above > below;
+        const maxH = Math.max(140, Math.min(320, openUp ? above : below));
+        panel.style.width = Math.max(r.width, 180) + 'px';
+        panel.style.left = Math.min(r.left, window.innerWidth - Math.max(r.width, 180) - 8) + 'px';
+        panel.style.maxHeight = maxH + 'px';
+        if (openUp) panel.style.bottom = (window.innerHeight - r.top + 6) + 'px';
+        else panel.style.top = (r.bottom + 6) + 'px';
+        btn.classList.add('open');
+        ddOpenPanel = panel; ddOpenBtn = btn;
+        const selected = panel.querySelector('.sel');
+        if (selected) selected.scrollIntoView({ block: 'nearest' });
+      });
+    }
+
+    function initDropdowns() {
+      document.querySelectorAll('select').forEach(enhanceSelect);
+      document.addEventListener('click', e => { if (ddOpenPanel && !ddOpenPanel.contains(e.target)) closeDropdown(); });
+      window.addEventListener('resize', closeDropdown);
+      document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDropdown(); });
+      document.addEventListener('scroll', e => { if (ddOpenPanel && !ddOpenPanel.contains(e.target)) closeDropdown(); }, true);
     }
 
     function zoomImage(src) {
