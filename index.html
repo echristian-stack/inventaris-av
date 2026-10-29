@@ -204,7 +204,7 @@
           </button>
 
           <button onclick="openEditModal(currentItem)" class="w-full liquid-subcard text-[#2B1D96] font-black py-2.5 rounded-2xl text-xs flex items-center justify-center gap-1.5 border border-[#7676D5]">
-            <span>🛠️</span> Edit / Pindah / Rusak
+            <span>🛠️</span> Edit / Titip / Rusak
           </button>
         </div>
       </div>
@@ -661,7 +661,10 @@
     // URL WEB APP APPS SCRIPT ANDA
     const API_URL = 'https://script.google.com/macros/s/AKfycbwpCJMb6ZVheX598MaxHnoxQfrT21mFmiUtzKgPk6Owf3hKK6qWz8u3rzgK2Mm1HDX6/exec';
 
+    let lastWriteAt = 0;
+
     function callServer(action, payload, callback, errCallback) {
+      if (action !== 'getAllData') lastWriteAt = Date.now();
       fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -824,9 +827,11 @@
     }
 
     function silentBackgroundSync() {
+      const startedAt = lastWriteAt;
       callServer('getAllData', { forceRefresh: false }, res => {
-        if (!isBusy) applyServerData(res);
-      });
+        // Buang hasil sync lama bila ada penyimpanan baru saat permintaan ini berjalan
+        if (!isBusy && startedAt === lastWriteAt) applyServerData(res);
+      }, () => {});
     }
 
     function showLoading(show) {
