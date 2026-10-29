@@ -2,30 +2,1870 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>🔊 Aplikasi Inventaris Departemen AV</title>
-  <meta property="og:title" content="🔊 Aplikasi Inventaris Departemen AV">
-  <meta property="og:description" content="Cari lokasi kotak, barang, input alat baru, dan catat peminjaman alat AV.">
-  <meta property="og:image" content="https://cms-imgp.jw-cdn.org/img/p/502500226/univ/art/502500226_univ_lsr_lg.jpg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inventaris Departemen AV</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      background: #D2DAEF;
+    body {
+      background: linear-gradient(145deg, #D2DAEF 0%, #CADDF2 50%, #e5eaf7 100%);
+      min-height: 100vh;
+      color: #1a1446;
     }
-    iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-      display: block;
+    .blob-1 { background: #A695DA; width: 220px; height: 220px; top: -20px; left: -20px; }
+    .blob-2 { background: #5BAAD2; width: 200px; height: 200px; top: 40%; right: -20px; }
+    .blob-3 { background: #7676D5; width: 200px; height: 200px; bottom: 5%; left: -10px; }
+
+    .liquid-glass {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.48) 0%, rgba(255, 255, 255, 0.24) 100%);
+      backdrop-filter: blur(24px) saturate(190%);
+      -webkit-backdrop-filter: blur(24px) saturate(190%);
+      border: 1.5px solid rgba(255, 255, 255, 0.88);
+      box-shadow: 0 10px 32px 0 rgba(43, 29, 150, 0.10), inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.92);
     }
+    .liquid-subcard {
+      background: rgba(255, 255, 255, 0.60);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1.5px solid rgba(255, 255, 255, 0.92);
+      box-shadow: 0 4px 14px rgba(30, 89, 143, 0.06);
+    }
+    .liquid-input {
+      background: rgba(255, 255, 255, 0.86);
+      border: 2px solid rgba(118, 118, 213, 0.45);
+      color: #1a1446;
+      transition: all 0.2s;
+    }
+    .liquid-input:focus {
+      background: rgba(255, 255, 255, 0.98);
+      border-color: #53339E;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(166, 149, 218, 0.35);
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #53339E 0%, #2B1D96 100%);
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.45);
+      box-shadow: 0 6px 18px rgba(43, 29, 150, 0.28);
+    }
+    .btn-ocean {
+      background: linear-gradient(135deg, #1E598F 0%, #5BAAD2 100%);
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.45);
+      box-shadow: 0 6px 18px rgba(30, 89, 143, 0.25);
+    }
+    .loader {
+      border: 3.5px solid rgba(118, 118, 213, 0.25);
+      border-top: 3.5px solid #53339E;
+      border-radius: 50%;
+      width: 26px;
+      height: 26px;
+      animation: spin 0.75s linear infinite;
+      display: inline-block;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    @keyframes popIn {
+      0% { transform: scale(0.8); opacity: 0; }
+      70% { transform: scale(1.05); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .hore-anim { animation: popIn 0.35s ease-out forwards; }
   </style>
 </head>
-<body>
-  <!-- GANTI URL DI BAWAH DENGAN URL WEB APP GOOGLE APPS SCRIPT ANDA -->
-  <iframe src="https://script.google.com/u/0/home/projects/1EHCUM8TS1qkOjCVxpCYUEWW8_Q91BvqIQ4LgJ0V9qqVxWoI8gjLPO5fA/edit" allow="camera; clipboard-write"></iframe>
+<body class="font-sans antialiased selection:bg-purple-200">
+
+  <div class="fixed inset-0 overflow-hidden pointer-events-none -z-10">
+    <div class="absolute rounded-full filter blur-3xl opacity-55 blob-1"></div>
+    <div class="absolute rounded-full filter blur-3xl opacity-50 blob-2"></div>
+    <div class="absolute rounded-full filter blur-3xl opacity-45 blob-3"></div>
+  </div>
+
+  <div class="max-w-md mx-auto min-h-screen relative pb-28 px-3.5 pt-3">
+    
+    <!-- HEADER BANNER -->
+    <header class="relative rounded-3xl overflow-hidden mb-3.5 border-[1.5px] border-white/90 shadow-[0_12px_32px_rgba(43,29,150,0.14)] w-full">
+      <img src="https://cms-imgp.jw-cdn.org/img/p/502500226/univ/art/502500226_univ_lsr_lg.jpg" 
+           alt="Inventaris AV" 
+           class="w-full h-36 object-cover object-center block">
+      <div class="absolute inset-0 bg-gradient-to-t from-[#1a1446]/45 via-transparent to-white/10 pointer-events-none"></div>
+
+      <div class="absolute bottom-2 left-2 right-2 rounded-2xl px-3 py-2 flex items-center justify-between gap-2"
+           style="background: linear-gradient(135deg, rgba(255, 255, 255, 0.82) 0%, rgba(240, 244, 255, 0.66) 100%); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); border: 1.5px solid rgba(255, 255, 255, 0.94); box-shadow: 0 8px 20px rgba(26, 20, 70, 0.15);">
+        <div class="min-w-0 flex-1">
+          <h1 class="text-sm font-black text-[#2B1D96] leading-tight truncate">Inventaris AV</h1>
+          <p class="text-[11px] font-bold text-[#1E598F] truncate">Cari, Pinjam & Rapikan Kotak</p>
+        </div>
+        <div class="flex items-center gap-1.5 shrink-0">
+          <button onclick="loadDataFromServer(true)" title="Muat Ulang" class="bg-white/90 px-2.5 py-1.5 rounded-xl text-xs font-extrabold text-[#2B1D96] border border-white shadow-sm active:scale-95 transition">
+            🔄
+          </button>
+          <a id="btnLihatTabel" href="#" target="_blank" class="btn-ocean text-xs font-extrabold px-2.5 py-1.5 rounded-xl transition flex items-center gap-1 shadow-sm">
+            <span>📊</span> Tabel
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <!-- LOADING -->
+    <div id="loading" class="liquid-glass rounded-3xl p-3 text-center my-2.5 hidden">
+      <div class="loader"></div>
+      <p class="text-xs font-extrabold text-[#2B1D96] mt-1">Memproses Cepat...</p>
+    </div>
+
+    <!-- ==================== MENU 1: CARI & PINJAM ==================== -->
+    <section id="secCari" class="space-y-3">
+      
+      <div class="liquid-glass p-3.5 rounded-3xl space-y-2.5">
+        <input type="text" id="searchInput" class="liquid-input w-full p-3 rounded-2xl text-sm font-bold placeholder-slate-500 shadow-inner" placeholder="🔍 Cari nama alat, peminjam..." oninput="runSearch()">
+        
+        <div class="grid grid-cols-2 gap-2">
+          <select id="filterKotak" class="liquid-input p-2.5 rounded-xl text-xs font-extrabold truncate w-full" onchange="runSearch()">
+            <option value="ALL">📦 Semua Kotak</option>
+          </select>
+          <select id="filterStatus" class="liquid-input p-2.5 rounded-xl text-xs font-extrabold truncate w-full" onchange="runSearch()">
+            <option value="ALL">📌 Semua Status</option>
+            <option value="di kotak">📦 di kotak</option>
+            <option value="dipakai di gedung">⚡ dipakai di gedung</option>
+            <option value="Selesai masuk kotak">✅ Selesai masuk kotak</option>
+            <option value="TITIPAN_FILTER">🔄 Barang Titipan</option>
+            <option value="RUSAK_FILTER">⚠️ Rusak / Hilang</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- KARTU DETAIL BARANG -->
+      <div id="detailCard" class="liquid-glass p-4 rounded-3xl hidden space-y-3 border-2 border-[#53339E]">
+        <div class="flex justify-between items-start gap-2">
+          <div class="min-w-0 flex-1">
+            <span id="detKotakBadge" class="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-[#CADDF2] text-[#2B1D96] truncate inline-block max-w-full"></span>
+            <h2 id="detNama" class="font-black text-base text-[#2B1D96] mt-1 leading-snug break-words"></h2>
+          </div>
+          <button onclick="document.getElementById('detailCard').classList.add('hidden')" class="liquid-subcard px-3 py-1 rounded-xl text-xs font-black text-slate-700 shrink-0">
+            ✖
+          </button>
+        </div>
+
+        <div id="detTitipanBox" class="hidden bg-amber-100 border border-amber-400 p-2.5 rounded-2xl flex items-center justify-between gap-2 text-xs">
+          <div class="min-w-0 flex-1 truncate">
+            <strong class="font-black text-amber-950 block truncate">🔄 Titipan Sementara!</strong>
+            <span class="font-bold text-amber-900 truncate block">Asal: <b id="detOriginBoxName"></b></span>
+          </div>
+          <button onclick="returnTitipanFromDetail()" class="bg-amber-600 text-white font-black px-2.5 py-1.5 rounded-xl text-xs shrink-0 shadow">
+            ↩️ Pulang
+          </button>
+        </div>
+
+        <div id="detStatusBanner" class="p-2.5 rounded-2xl text-center font-black text-xs shadow-sm truncate"></div>
+
+        <div class="liquid-subcard rounded-2xl p-2.5 grid grid-cols-3 gap-1 text-center text-xs">
+          <div class="truncate">
+            <span class="text-[10px] text-slate-500 block font-extrabold">KOTAK</span>
+            <strong id="detTabel" class="font-black text-[#2B1D96] text-xs truncate block"></strong>
+          </div>
+          <div class="truncate">
+            <span class="text-[10px] text-slate-500 block font-extrabold">BARIS</span>
+            <strong id="detBaris" class="font-black text-[#2B1D96] text-xs truncate block">Baris <span id="detBarisNum"></span></strong>
+          </div>
+          <div class="truncate">
+            <span class="text-[10px] text-slate-500 block font-extrabold">NO. URUT</span>
+            <strong id="detNomor" class="font-black text-[#2B1D96] text-xs truncate block">#<span id="detNomorNum"></span></strong>
+          </div>
+        </div>
+
+        <div>
+          <div class="flex justify-between items-center mb-1">
+            <span class="text-xs font-black text-[#2B1D96]">📸 Foto:</span>
+            <span id="detStatusFoto" class="text-[11px] font-extrabold px-2 py-0.5 rounded-full"></span>
+          </div>
+          <div class="w-full h-40 rounded-2xl border-2 border-dashed border-[#7676D5] bg-white/50 flex flex-col items-center justify-center overflow-hidden">
+            <img id="detFoto" class="w-full h-full object-cover cursor-pointer hidden" onclick="zoomImage(this.src)">
+            <div id="noFotoPlaceholder" class="text-center p-2">
+              <span class="text-2xl block">🖼️</span>
+              <p class="text-xs font-extrabold text-slate-600">Tanpa Foto</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="liquid-subcard p-3 rounded-2xl space-y-1.5 text-xs">
+          <div class="flex justify-between gap-2"><span class="font-bold text-slate-600 shrink-0">👤 Peminjam:</span> <strong id="detPeminjam" class="font-black text-slate-900 truncate text-right"></strong></div>
+          <div class="flex justify-between gap-2"><span class="font-bold text-slate-600 shrink-0">🛡️ PIC:</span> <strong id="detPetugas" class="font-black text-[#53339E] truncate text-right"></strong></div>
+          <div class="flex justify-between gap-2"><span class="font-bold text-slate-600 shrink-0">📅 Pinjam/Kembali:</span> <strong id="detTglInfo" class="font-bold text-slate-800 truncate text-right"></strong></div>
+          <div class="flex justify-between gap-2"><span class="font-bold text-slate-600 shrink-0">📝 Catatan:</span> <strong id="detCatatan" class="font-bold text-slate-800 truncate text-right"></strong></div>
+          <div class="flex justify-between gap-2"><span class="font-bold text-slate-500 shrink-0">✍️ Penginput:</span> <strong id="detPenginput" class="font-bold text-slate-700 truncate text-right"></strong></div>
+        </div>
+
+        <div class="space-y-2">
+          <button id="btnActionPinjam" onclick="openPinjamModal()" class="w-full btn-primary font-black py-3 rounded-2xl text-sm flex items-center justify-center gap-1.5 shadow">
+            <span>🤝</span> Pinjam Alat
+          </button>
+          
+          <button id="btnActionKembali" onclick="quickReturnFromDetail()" class="w-full bg-emerald-600 text-white font-black py-3 rounded-2xl text-sm shadow-lg flex items-center justify-center gap-1.5 hidden">
+            <span>📥</span> Masuk Kotak
+          </button>
+
+          <button onclick="openEditModal(currentItem)" class="w-full liquid-subcard text-[#2B1D96] font-black py-2.5 rounded-2xl text-xs flex items-center justify-center gap-1.5 border border-[#7676D5]">
+            <span>🛠️</span> Edit / Pindah / Rusak
+          </button>
+        </div>
+      </div>
+
+      <div class="liquid-glass p-3.5 rounded-3xl">
+        <div class="flex justify-between items-center mb-2.5">
+          <h3 class="text-xs font-black text-[#2B1D96] uppercase">📋 Daftar Alat:</h3>
+          <span id="searchCountBadge" class="text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-white/80 text-[#53339E]">0 Alat</span>
+        </div>
+        <div id="searchResults" class="space-y-2 max-h-[54vh] overflow-y-auto pr-0.5"></div>
+      </div>
+
+    </section>
+
+    <!-- ==================== MENU 2: KOTAK & EDIT ==================== -->
+    <section id="secEdit" class="hidden space-y-3">
+      
+      <div class="liquid-glass p-3.5 rounded-3xl space-y-2.5">
+        <div class="flex justify-between items-center gap-2">
+          <label class="text-xs font-black text-[#2B1D96]">📦 Pilih Kotak:</label>
+          <button onclick="openAddModal()" class="btn-primary px-3 py-1.5 rounded-xl text-xs font-black shadow shrink-0">
+            ➕ Alat / Kotak
+          </button>
+        </div>
+
+        <select id="manageBoxSelect" class="liquid-input w-full p-3 rounded-2xl text-xs font-black truncate" onchange="renderManageBoxList()"></select>
+
+        <div class="liquid-subcard p-3 rounded-2xl space-y-2 border-2 border-white">
+          <div class="flex justify-between items-center">
+            <span class="text-[11px] font-black text-[#1E598F] uppercase">🚚 Pengangkutan Kotak:</span>
+            <button onclick="openTransportModalForCurrentBox()" class="text-xs font-black text-[#53339E] underline shrink-0">
+              Ubah Status
+            </button>
+          </div>
+
+          <div id="boxCurrentTransportBadge" class="p-2.5 rounded-xl font-black text-xs text-center shadow-sm truncate"></div>
+          
+          <div class="flex justify-between items-center text-[11px] font-bold text-slate-600 px-1 truncate">
+            <span class="truncate">Oleh: <b id="boxTransportUpdater" class="text-[#2B1D96]">-</b></span>
+            <span class="shrink-0">Waktu: <b id="boxTransportTime">-</b></span>
+          </div>
+
+          <button id="btnNextTransport" onclick="triggerNextTransportStep()" class="w-full btn-ocean font-black py-2.5 rounded-xl text-xs flex items-center justify-center gap-1 shadow truncate">
+          </button>
+        </div>
+
+        <div class="flex gap-2">
+          <button onclick="promptRenameCurrentBox()" class="flex-1 liquid-subcard py-2.5 rounded-xl text-xs font-extrabold text-[#2B1D96] truncate">
+            ✏️ Ganti Nama
+          </button>
+          <button onclick="openAddModalForCurrentBox()" class="flex-1 liquid-subcard py-2.5 rounded-xl text-xs font-extrabold text-[#1E598F] truncate">
+            ➕ Isi Alat
+          </button>
+        </div>
+      </div>
+
+      <div class="liquid-glass p-3.5 rounded-3xl space-y-2">
+        <div class="flex justify-between items-center">
+          <span class="text-xs font-black text-[#2B1D96] uppercase">📋 Isi Kotak Ini:</span>
+          <span id="manageBoxCount" class="text-xs font-extrabold bg-white/80 px-2.5 py-0.5 rounded-full text-[#53339E]">0 Alat</span>
+        </div>
+        <div id="manageBoxItems" class="space-y-2 max-h-[48vh] overflow-y-auto pr-0.5"></div>
+      </div>
+
+    </section>
+
+    <!-- ==================== MENU 3: TAGIH & WA ==================== -->
+    <section id="secTim" class="hidden space-y-3">
+      
+      <div class="liquid-glass p-1.5 rounded-2xl grid grid-cols-3 gap-1 text-center">
+        <button id="subTabTagih" onclick="switchSubTim('tagih')" class="py-2 rounded-xl text-xs font-black btn-primary truncate">
+          🛡️ Tugas Tim
+        </button>
+        <button id="subTabPeminjam" onclick="switchSubTim('peminjam')" class="py-2 rounded-xl text-xs font-extrabold text-[#2B1D96] truncate">
+          👤 Peminjam
+        </button>
+        <button id="subTabPenginput" onclick="switchSubTim('penginput')" class="py-2 rounded-xl text-xs font-extrabold text-[#2B1D96] truncate">
+          ✍️ Penginput
+        </button>
+      </div>
+
+      <div id="viewTimTagih" class="liquid-glass p-3.5 rounded-3xl space-y-2.5">
+        <h3 class="font-black text-xs text-[#2B1D96]">🛡️ Tagihan Tim Inventaris (PIC)</h3>
+        <select id="selPetugasInventaris" class="liquid-input p-3 rounded-2xl w-full text-xs font-black truncate" onchange="renderTagihanPetugas()">
+          <option value="">-- Pilih Tim Inventaris --</option>
+        </select>
+
+        <div id="petugasSummaryBox" class="hidden liquid-subcard p-2.5 rounded-2xl flex items-center justify-between border-l-4 border-l-[#53339E] text-xs">
+          <div>
+            <span class="text-[11px] font-bold text-slate-600 block">Belum Kembali:</span>
+            <strong id="petugasTotalBarang" class="font-black text-[#2B1D96]">0 Alat</strong>
+          </div>
+          <div class="text-right">
+            <span class="text-[11px] font-bold text-slate-600 block">Peminjam:</span>
+            <strong id="petugasTotalClient" class="font-black text-[#1E598F]">0 Orang</strong>
+          </div>
+        </div>
+
+        <div id="petugasClientList" class="space-y-2.5"></div>
+      </div>
+
+      <div id="viewTimPeminjam" class="liquid-glass p-3.5 rounded-3xl space-y-2.5 hidden">
+        <h3 class="font-black text-xs text-[#2B1D96]">👤 Cari Nama Peminjam</h3>
+        <select id="selNamaPeminjam" class="liquid-input p-3 rounded-2xl w-full text-xs font-black truncate" onchange="renderDaftarPeminjam()">
+          <option value="">-- Pilih Nama Peminjam --</option>
+        </select>
+
+        <div id="peminjamBarangList" class="space-y-2 max-h-60 overflow-y-auto"></div>
+
+        <button id="btnCopyWaClient" onclick="copyClientToWa()" class="hidden w-full btn-primary font-black py-3 rounded-2xl text-sm shadow-lg flex items-center justify-center gap-1.5">
+          <span>📋</span> <span id="txtCopyWaClient">Copy ke WA</span>
+        </button>
+      </div>
+
+      <div id="viewTimPenginput" class="liquid-glass p-3.5 rounded-3xl space-y-2.5 hidden">
+        <h3 class="font-black text-xs text-[#2B1D96]">✍️ Riwayat Input Saudara</h3>
+        <select id="selNamaPenginput" class="liquid-input p-3 rounded-2xl w-full text-xs font-black truncate" onchange="renderDaftarPenginput()">
+          <option value="">-- Pilih Nama Saudara --</option>
+        </select>
+
+        <div id="penginputBarangList" class="space-y-2 max-h-64 overflow-y-auto"></div>
+      </div>
+
+    </section>
+
+    <!-- ==================== MENU 4: RINGKASAN ==================== -->
+    <section id="secDash" class="hidden space-y-3">
+      
+      <div class="grid grid-cols-2 gap-2">
+        <div class="liquid-glass p-3 rounded-3xl border-l-4 border-l-[#1E598F]">
+          <span class="text-[10px] font-black text-[#1E598F] uppercase">📦 DI KOTAK</span>
+          <p id="statDiKotak" class="text-xl font-black text-[#1E598F] mt-0.5">0</p>
+        </div>
+
+        <div class="liquid-glass p-3 rounded-3xl border-l-4 border-l-[#53339E]">
+          <span class="text-[10px] font-black text-[#53339E] uppercase">⚡ DIPAKAI</span>
+          <p id="statDipakai" class="text-xl font-black text-[#53339E] mt-0.5">0</p>
+        </div>
+
+        <div class="liquid-glass p-3 rounded-3xl border-l-4 border-l-emerald-600">
+          <span class="text-[10px] font-black text-emerald-900 uppercase">✅ SELESAI</span>
+          <p id="statSelesai" class="text-xl font-black text-emerald-700 mt-0.5">0</p>
+        </div>
+
+        <div class="liquid-glass p-3 rounded-3xl border-l-4 border-l-amber-500">
+          <span class="text-[10px] font-black text-amber-900 uppercase">⚠️ RUSAK/HILANG</span>
+          <p id="statRusak" class="text-xl font-black text-amber-600 mt-0.5">0</p>
+        </div>
+      </div>
+
+      <div class="liquid-glass p-3.5 rounded-3xl space-y-2">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xs font-black text-[#2B1D96] flex items-center gap-1 truncate">
+            <span>🚚</span> Status Pengangkutan Kotak
+          </h2>
+          <span id="badgeTotalKotak" class="bg-[#2B1D96] text-white text-[10px] font-black px-2 py-0.5 rounded-full shrink-0">0</span>
+        </div>
+        <div id="dashListTransportKotak" class="space-y-1.5 max-h-64 overflow-y-auto pr-0.5"></div>
+      </div>
+
+      <div class="liquid-glass p-3.5 rounded-3xl space-y-2">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xs font-black text-[#2B1D96] flex items-center gap-1 truncate">
+            <span>🔄</span> Barang Titipan Sementara
+          </h2>
+          <span id="badgeCountTitipan" class="bg-amber-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full shrink-0">0</span>
+        </div>
+        <div id="dashListTitipan" class="space-y-1.5 max-h-44 overflow-y-auto"></div>
+      </div>
+
+      <div class="liquid-glass p-3.5 rounded-3xl space-y-2">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xs font-black text-[#2B1D96] flex items-center gap-1 truncate">
+            <span>⚡</span> Sedang Dipakai di Gedung
+          </h2>
+          <span id="badgeCountPeminjam" class="bg-[#53339E] text-white text-[10px] font-black px-2 py-0.5 rounded-full shrink-0">0</span>
+        </div>
+        <div id="dashListPeminjam" class="space-y-1.5 max-h-44 overflow-y-auto"></div>
+      </div>
+
+      <div class="liquid-glass p-3.5 rounded-3xl space-y-2">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xs font-black text-[#2B1D96] flex items-center gap-1 truncate">
+            <span>⚠️</span> Barang Rusak / Hilang
+          </h2>
+          <span id="badgeCountMasalah" class="bg-amber-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full shrink-0">0</span>
+        </div>
+        <div id="dashListMasalah" class="space-y-1.5 max-h-44 overflow-y-auto"></div>
+      </div>
+
+    </section>
+
+    <!-- NAVIGASI BAWAH -->
+    <nav class="fixed bottom-0 left-0 right-0 z-30 px-3 pb-3 pt-1 pointer-events-none">
+      <div class="max-w-md mx-auto liquid-glass rounded-3xl p-1.5 grid grid-cols-4 gap-1 pointer-events-auto shadow-2xl">
+        <button id="navCari" onclick="switchTab('cari')" class="py-2 px-0.5 rounded-2xl flex flex-col items-center justify-center gap-0.5 btn-primary transition truncate">
+          <span class="text-base">🔍</span>
+          <span class="text-[11px] font-black leading-none truncate">Cari</span>
+        </button>
+        <button id="navEdit" onclick="switchTab('edit')" class="py-2 px-0.5 rounded-2xl flex flex-col items-center justify-center gap-0.5 text-[#2B1D96] hover:bg-white/40 transition truncate">
+          <span class="text-base">📦</span>
+          <span class="text-[11px] font-extrabold leading-none truncate">Kotak</span>
+        </button>
+        <button id="navTim" onclick="switchTab('tim')" class="py-2 px-0.5 rounded-2xl flex flex-col items-center justify-center gap-0.5 text-[#2B1D96] hover:bg-white/40 transition truncate">
+          <span class="text-base">📋</span>
+          <span class="text-[11px] font-extrabold leading-none truncate">Tagih</span>
+        </button>
+        <button id="navDash" onclick="switchTab('dash')" class="py-2 px-0.5 rounded-2xl flex flex-col items-center justify-center gap-0.5 text-[#2B1D96] hover:bg-white/40 transition truncate">
+          <span class="text-base">📊</span>
+          <span class="text-[11px] font-extrabold leading-none truncate">Ringkasan</span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- MODAL: TRANSPORT -->
+    <div id="transportModal" class="fixed inset-0 bg-[#1a1446]/50 backdrop-blur-sm hidden z-40 flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div class="liquid-glass bg-white/95 w-full sm:max-w-sm rounded-t-3xl sm:rounded-3xl p-4 shadow-2xl space-y-2.5 max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center">
+          <h3 class="font-black text-sm text-[#2B1D96]">🚚 Pengangkutan Kotak</h3>
+          <button onclick="closeModal('transportModal')" class="text-slate-600 font-black text-lg">&times;</button>
+        </div>
+
+        <div class="liquid-subcard p-2.5 rounded-2xl text-xs truncate">
+          <span class="text-slate-500 font-bold">Kotak:</span>
+          <strong id="mdlTransBoxName" class="text-sm font-black text-[#2B1D96] truncate block"></strong>
+        </div>
+
+        <div>
+          <label class="font-black text-[#53339E] text-xs block mb-1">✍️ Nama Saudara *</label>
+          <input type="text" id="mdlTransUpdater" placeholder="Nama Saudara..." class="liquid-input p-2.5 rounded-xl w-full text-xs font-extrabold">
+        </div>
+
+        <div>
+          <label class="font-black text-[#2B1D96] text-xs block mb-1">Pilih Status:</label>
+          <div id="mdlTransportOptions" class="space-y-1.5"></div>
+        </div>
+
+        <button onclick="closeModal('transportModal')" class="w-full bg-slate-200 text-slate-800 font-black py-2.5 rounded-2xl text-xs">
+          Tutup
+        </button>
+      </div>
+    </div>
+
+    <!-- MODAL: PINJAM -->
+    <div id="pinjamModal" class="fixed inset-0 bg-[#1a1446]/50 backdrop-blur-sm hidden z-40 flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div class="liquid-glass bg-white/95 w-full sm:max-w-sm rounded-t-3xl sm:rounded-3xl p-4 shadow-2xl space-y-2.5">
+        <div class="flex justify-between items-center">
+          <h3 class="font-black text-sm text-[#2B1D96]">🤝 Pinjam Alat</h3>
+          <button onclick="closeModal('pinjamModal')" class="text-slate-600 font-black text-lg">&times;</button>
+        </div>
+        
+        <div class="liquid-subcard p-2.5 rounded-2xl text-xs truncate">
+          <strong id="mdlPinjamNamaAlat" class="font-black text-[#2B1D96] truncate block"></strong>
+          <span id="mdlPinjamKotak" class="text-[11px] text-[#1E598F] font-extrabold truncate block"></span>
+        </div>
+
+        <div class="space-y-2 text-xs">
+          <div>
+            <label class="font-black text-[#2B1D96] block mb-0.5">1. Peminjam *</label>
+            <input type="text" id="mdlPeminjamNama" placeholder="Nama peminjam..." class="liquid-input p-2.5 rounded-xl w-full text-xs font-bold">
+          </div>
+          <div>
+            <label class="font-black text-[#53339E] block mb-0.5">2. PIC (Tim Inventaris) *</label>
+            <input type="text" id="mdlPetugasNama" placeholder="Nama Saudara..." class="liquid-input p-2.5 rounded-xl w-full text-xs font-bold">
+          </div>
+          <div>
+            <label class="font-black text-slate-700 block mb-0.5">3. Catatan</label>
+            <input type="text" id="mdlPinjamCatatan" placeholder="Catatan..." class="liquid-input p-2.5 rounded-xl w-full text-xs font-bold">
+          </div>
+        </div>
+
+        <div class="flex gap-2 pt-1">
+          <button onclick="closeModal('pinjamModal')" class="flex-1 bg-slate-200 text-slate-800 font-black py-2.5 rounded-2xl text-xs">Batal</button>
+          <button onclick="submitPinjam()" class="flex-1 btn-primary font-black py-2.5 rounded-2xl text-xs">⚡ Simpan</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: EDIT -->
+    <div id="editModal" class="fixed inset-0 bg-[#1a1446]/50 backdrop-blur-sm hidden z-40 flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div class="liquid-glass bg-white/95 w-full sm:max-w-sm rounded-t-3xl sm:rounded-3xl p-4 shadow-2xl max-h-[90vh] overflow-y-auto space-y-2.5">
+        <div class="flex justify-between items-center">
+          <h3 class="font-black text-sm text-[#2B1D96]">🛠️ Edit Alat</h3>
+          <button onclick="closeModal('editModal')" class="text-slate-600 font-black text-lg">&times;</button>
+        </div>
+
+        <div class="space-y-2 text-xs">
+          <div>
+            <label class="font-black text-[#2B1D96] block mb-0.5">Nama Alat</label>
+            <input type="text" id="edtNama" class="liquid-input p-2.5 rounded-xl w-full text-xs font-extrabold">
+          </div>
+
+          <div class="liquid-subcard p-2.5 rounded-2xl space-y-1.5">
+            <div>
+              <label class="font-black text-[#1E598F] block mb-0.5">📦 Kotak:</label>
+              <select id="edtSheet" class="liquid-input p-2 rounded-xl w-full text-xs font-black truncate" onchange="onEdtSheetChange()"></select>
+            </div>
+
+            <div id="edtTitipanOptionWrap" class="hidden bg-amber-100 border border-amber-400 p-2 rounded-xl space-y-1">
+              <label class="flex items-start gap-2 cursor-pointer">
+                <input type="checkbox" id="edtIsTitipan" class="mt-0.5 w-3.5 h-3.5 accent-[#53339E] shrink-0" checked>
+                <span class="text-[10px] font-extrabold text-amber-950 leading-snug truncate">
+                  🔄 <b>Titipan Sementara</b> (Asal: <b id="edtAsalLabel"></b>)
+                </span>
+              </label>
+            </div>
+
+            <div>
+              <label class="font-black text-[#53339E] block mb-0.5">📌 Status:</label>
+              <select id="edtStatus" class="liquid-input p-2 rounded-xl w-full text-xs font-black">
+                <option value="di kotak">📦 di kotak</option>
+                <option value="dipakai di gedung">⚡ dipakai di gedung</option>
+                <option value="Selesai masuk kotak">✅ Selesai masuk kotak</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div class="min-w-0">
+              <label class="font-extrabold text-slate-700 block mb-0.5">Peminjam</label>
+              <input type="text" id="edtPeminjam" placeholder="-" class="liquid-input p-2 rounded-xl w-full text-xs font-bold">
+            </div>
+            <div class="min-w-0">
+              <label class="font-extrabold text-slate-700 block mb-0.5">PIC</label>
+              <input type="text" id="edtPetugas" placeholder="-" class="liquid-input p-2 rounded-xl w-full text-xs font-bold">
+            </div>
+          </div>
+
+          <div>
+            <div class="flex justify-between items-center mb-0.5">
+              <label class="font-extrabold text-slate-700">Catatan</label>
+              <div class="flex gap-1 shrink-0">
+                <button type="button" onclick="tandaiKondisiCepat('RUSAK')" class="bg-amber-500 text-white px-2 py-0.5 rounded text-[10px] font-black">⚠️ Rusak</button>
+                <button type="button" onclick="tandaiKondisiCepat('HILANG')" class="bg-rose-600 text-white px-2 py-0.5 rounded text-[10px] font-black">❌ Hilang</button>
+              </div>
+            </div>
+            <input type="text" id="edtCatatan" placeholder="Catatan..." class="liquid-input p-2 rounded-xl w-full text-xs font-bold">
+          </div>
+
+          <div>
+            <label class="font-black text-[#53339E] block mb-0.5">✍️ Nama Saudara *</label>
+            <input type="text" id="edtPenginput" placeholder="Wajib diisi..." class="liquid-input p-2 rounded-xl w-full text-xs font-extrabold">
+          </div>
+
+          <div>
+            <label class="font-black text-[#2B1D96] block mb-0.5">📸 Foto</label>
+            <div class="border-2 border-dashed border-[#7676D5] p-2.5 text-center rounded-2xl relative bg-white/70">
+              <input type="file" id="edtFoto" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept="image/*" onchange="handlePhotoUpload(event, 'edit')">
+              <span class="text-[#2B1D96] font-black text-xs">📸 Ambil / Ganti Foto</span>
+              <img id="previewEdt" class="mt-1.5 mx-auto rounded-xl hidden max-h-24 object-contain shadow">
+            </div>
+          </div>
+        </div>
+
+        <div class="flex gap-2 pt-1">
+          <button onclick="confirmDeleteFromEdit()" class="bg-rose-100 text-rose-800 border border-rose-300 font-black px-3.5 py-2.5 rounded-2xl text-xs shrink-0">🗑️</button>
+          <button onclick="closeModal('editModal')" class="bg-slate-200 text-slate-800 font-black px-4 py-2.5 rounded-2xl text-xs">Batal</button>
+          <button onclick="submitEditItem()" class="flex-1 btn-primary font-black py-2.5 rounded-2xl text-xs">💾 Simpan</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: TAMBAH -->
+    <div id="addModal" class="fixed inset-0 bg-[#1a1446]/50 backdrop-blur-sm hidden z-40 flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div class="liquid-glass bg-white/95 w-full sm:max-w-sm rounded-t-3xl sm:rounded-3xl p-4 shadow-2xl max-h-[90vh] overflow-y-auto space-y-2.5">
+        <div class="flex justify-between items-center">
+          <h3 class="font-black text-sm text-[#2B1D96]">➕ Alat Baru</h3>
+          <button onclick="closeModal('addModal')" class="text-slate-600 font-black text-lg">&times;</button>
+        </div>
+
+        <div class="space-y-2 text-xs">
+          <div class="liquid-subcard p-2.5 rounded-2xl space-y-1.5">
+            <label class="font-black text-[#2B1D96] block">1. Kotak:</label>
+            <select id="newSheetSelect" class="liquid-input p-2 rounded-xl w-full text-xs font-black truncate" onchange="onNewSheetChange()"></select>
+            <div id="newBoxNameWrap" class="hidden pt-1">
+              <input type="text" id="newBoxCustomName" placeholder="Nama Kotak Baru..." class="liquid-input p-2 rounded-xl w-full text-xs font-extrabold">
+            </div>
+          </div>
+
+          <div>
+            <label class="font-black text-[#2B1D96] block mb-0.5">2. Nama Alat *</label>
+            <input type="text" id="newNama" placeholder="Nama alat..." class="liquid-input p-2.5 rounded-xl w-full text-xs font-extrabold">
+          </div>
+
+          <div>
+            <label class="font-black text-[#53339E] block mb-0.5">3. Nama Saudara *</label>
+            <input type="text" id="newPenginput" placeholder="Wajib diisi..." class="liquid-input p-2.5 rounded-xl w-full text-xs font-extrabold">
+          </div>
+
+          <div>
+            <label class="font-black text-[#2B1D96] block mb-0.5">4. Status Awal</label>
+            <select id="newStatus" class="liquid-input p-2 rounded-xl w-full text-xs font-black">
+              <option value="di kotak">📦 di kotak</option>
+              <option value="Selesai masuk kotak">✅ Selesai masuk kotak</option>
+              <option value="dipakai di gedung">⚡ dipakai di gedung</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="font-black text-slate-700 block mb-0.5">5. Catatan</label>
+            <input type="text" id="newCatatan" placeholder="Catatan..." class="liquid-input p-2.5 rounded-xl w-full text-xs font-bold">
+          </div>
+
+          <div>
+            <label class="font-black text-[#2B1D96] block mb-0.5">6. Foto</label>
+            <div class="border-2 border-dashed border-[#7676D5] p-2.5 text-center rounded-2xl relative bg-white/70">
+              <input type="file" id="newFoto" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept="image/*" onchange="handlePhotoUpload(event, 'new')">
+              <span class="text-[#2B1D96] font-black text-xs">📸 Ambil / Pilih Foto</span>
+              <img id="previewNew" class="mt-1.5 mx-auto rounded-xl hidden max-h-24 object-contain shadow">
+            </div>
+          </div>
+        </div>
+
+        <div class="flex gap-2 pt-1">
+          <button onclick="closeModal('addModal')" class="flex-1 bg-slate-200 text-slate-800 font-black py-2.5 rounded-2xl text-xs">Batal</button>
+          <button onclick="submitNewItem()" class="flex-1 btn-primary font-black py-2.5 rounded-2xl text-xs">💾 Simpan</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CUSTOM LIQUID GLASS DIALOG -->
+    <div id="customDialogModal" class="fixed inset-0 bg-[#1a1446]/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+      <div class="liquid-glass bg-white/95 w-full max-w-sm rounded-3xl p-5 shadow-2xl space-y-3 border-2 border-[#53339E]">
+        <h3 id="dlgTitle" class="font-black text-sm text-[#2B1D96]">💡 Informasi</h3>
+        <p id="dlgMessage" class="text-xs font-bold text-slate-700 whitespace-pre-line leading-relaxed"></p>
+        <div id="dlgInputWrap" class="hidden pt-1">
+          <input type="text" id="dlgInput" class="liquid-input p-2.5 rounded-xl w-full text-xs font-extrabold">
+        </div>
+        <div class="flex gap-2 pt-2">
+          <button id="dlgBtnCancel" class="flex-1 bg-slate-200 text-slate-800 font-black py-2.5 rounded-2xl text-xs hidden">Batal</button>
+          <button id="dlgBtnOk" class="flex-1 btn-primary font-black py-2.5 rounded-2xl text-xs">OK</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ZOOM FOTO -->
+    <div id="zoomModal" class="fixed inset-0 bg-black/85 backdrop-blur-md hidden z-50 flex items-center justify-center p-4" onclick="this.classList.add('hidden')">
+      <span class="absolute top-5 right-6 text-white font-bold text-3xl cursor-pointer">&times;</span>
+      <img id="zoomedImg" class="max-w-full max-h-full rounded-2xl shadow-2xl object-contain">
+    </div>
+
+    <!-- POPUP HORE -->
+    <div id="horeToast" class="fixed inset-0 pointer-events-none hidden z-50 flex items-center justify-center p-4">
+      <div class="hore-anim liquid-glass bg-white/95 border-2 border-[#53339E] px-6 py-5 rounded-3xl shadow-2xl text-center max-w-xs">
+        <div class="text-4xl mb-1.5">🎉🎺✨</div>
+        <h3 class="text-xl font-black text-[#2B1D96]">HORE!</h3>
+        <p id="horeText" class="text-xs font-extrabold text-slate-700 mt-1"></p>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // URL WEB APP APPS SCRIPT ANDA
+    const API_URL = 'https://script.google.com/macros/s/AKfycbwpCJMb6ZVheX598MaxHnoxQfrT21mFmiUtzKgPk6Owf3hKK6qWz8u3rzgK2Mm1HDX6/exec';
+
+    function callServer(action, payload, callback, errCallback) {
+      fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(Object.assign({ action: action }, payload))
+      })
+      .then(res => res.json())
+      .then(json => {
+        if (json.status === 'success') {
+          if (callback) callback(json.data);
+        } else {
+          if (errCallback) errCallback(new Error(json.message));
+          else handleServerError(new Error(json.message));
+        }
+      })
+      .catch(err => {
+        if (errCallback) errCallback(err);
+        else handleServerError(err);
+      });
+    }
+
+    function showAppAlert(msg, title) {
+      const modal = document.getElementById('customDialogModal');
+      document.getElementById('dlgTitle').innerText = title || '⚠️ Perhatian';
+      document.getElementById('dlgMessage').innerText = msg;
+      document.getElementById('dlgInputWrap').classList.add('hidden');
+      document.getElementById('dlgBtnCancel').classList.add('hidden');
+      const btnOk = document.getElementById('dlgBtnOk');
+      btnOk.innerText = 'OK';
+      btnOk.onclick = () => modal.classList.add('hidden');
+      modal.classList.remove('hidden');
+    }
+
+    function showAppConfirm(msg, onConfirm, title) {
+      const modal = document.getElementById('customDialogModal');
+      document.getElementById('dlgTitle').innerText = title || '❓ Konfirmasi';
+      document.getElementById('dlgMessage').innerText = msg;
+      document.getElementById('dlgInputWrap').classList.add('hidden');
+      const btnCancel = document.getElementById('dlgBtnCancel');
+      btnCancel.classList.remove('hidden');
+      btnCancel.onclick = () => modal.classList.add('hidden');
+      const btnOk = document.getElementById('dlgBtnOk');
+      btnOk.innerText = 'Ya, Lanjutkan';
+      btnOk.onclick = () => {
+        modal.classList.add('hidden');
+        if (onConfirm) onConfirm();
+      };
+      modal.classList.remove('hidden');
+    }
+
+    function showAppPrompt(msg, defaultVal, onSubmit, title) {
+      const modal = document.getElementById('customDialogModal');
+      document.getElementById('dlgTitle').innerText = title || '✍️ Input Data';
+      document.getElementById('dlgMessage').innerText = msg;
+      const inputWrap = document.getElementById('dlgInputWrap');
+      const inputEl = document.getElementById('dlgInput');
+      inputWrap.classList.remove('hidden');
+      inputEl.value = defaultVal || '';
+      const btnCancel = document.getElementById('dlgBtnCancel');
+      btnCancel.classList.remove('hidden');
+      btnCancel.onclick = () => modal.classList.add('hidden');
+      const btnOk = document.getElementById('dlgBtnOk');
+      btnOk.innerText = 'Simpan';
+      btnOk.onclick = () => {
+        const val = inputEl.value.trim();
+        modal.classList.add('hidden');
+        if (onSubmit) onSubmit(val);
+      };
+      modal.classList.remove('hidden');
+      setTimeout(() => inputEl.focus(), 100);
+    }
+
+    let inventoryData = [];
+    let sheetList = [];
+    let boxTransport = {};
+    let currentItem = null;
+    let activeTransportBox = "";
+    let base64New = null, fileNameNew = null;
+    let base64Edt = null, fileNameEdt = null;
+    let currentWaTextClient = "";
+    let isBusy = false;
+
+    const TRANSPORT_STEPS = [
+      { key: 'Tidak Dibawa', icon: '🏠', label: 'Tidak Dibawa (Gudang)', bg: 'bg-slate-200 text-slate-800' },
+      { key: 'Siap ke Gedung', icon: '🚚', label: 'Siap ke Gedung', bg: 'bg-[#CADDF2] text-[#2B1D96]' },
+      { key: 'Diangkut ke Gedung', icon: '🛣️', label: 'Diangkut ke Gedung', bg: 'bg-[#5BAAD2] text-white' },
+      { key: 'Tiba di Gedung', icon: '🏢', label: 'Tiba di Gedung', bg: 'bg-[#53339E] text-white' },
+      { key: 'Siap ke Gudang', icon: '📦', label: 'Siap ke Gudang Balai', bg: 'bg-amber-500 text-white' },
+      { key: 'Diangkut ke Gudang', icon: '🛻', label: 'Sedang Diangkut ke Gudang', bg: 'bg-[#1E598F] text-white' },
+      { key: 'Tiba di Gudang', icon: '✅', label: 'Tiba di Gudang (Selesai)', bg: 'bg-emerald-600 text-white' }
+    ];
+
+    window.onload = () => {
+      loadDataFromServer(false);
+      setInterval(() => {
+        if (!isBusy && document.hidden === false) {
+          silentBackgroundSync();
+        }
+      }, 20000);
+    };
+
+    function getSavedUserName() {
+      try { return localStorage.getItem('av_nama_saudara') || ''; } catch(e) { return ''; }
+    }
+    function saveUserName(name) {
+      if (!name || name === '-') return;
+      try { localStorage.setItem('av_nama_saudara', name.trim()); } catch(e) {}
+    }
+
+    function getTransportMeta(statusKey) {
+      return TRANSPORT_STEPS.find(s => s.key === statusKey) || TRANSPORT_STEPS[0];
+    }
+
+    function handleServerError(err) {
+      isBusy = false;
+      showLoading(false);
+      const msg = (err && err.message) ? err.message : 'Terjadi gangguan koneksi.';
+      showAppAlert(msg, '⚠️ Perhatian');
+      loadDataFromServer(true);
+    }
+
+    function escapeHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function applyServerData(res, callback) {
+      isBusy = false;
+      inventoryData = res.items || [];
+      sheetList = res.sheets || [];
+      boxTransport = res.boxTransport || {};
+      
+      if (res.spreadsheetUrl) {
+        document.getElementById('btnLihatTabel').href = res.spreadsheetUrl;
+      }
+      
+      populateDropdowns();
+      runSearch();
+      renderManageBoxList();
+      renderDashboard();
+      renderTagihanPetugas();
+      renderDaftarPeminjam();
+      renderDaftarPenginput();
+      
+      if (currentItem && !document.getElementById('detailCard').classList.contains('hidden')) {
+        const refreshed = inventoryData.find(x => x.sheetName === currentItem.sheetName && x.nama === currentItem.nama);
+        if (refreshed) showDetailCard(refreshed, true);
+      }
+      
+      showLoading(false);
+      if (callback) callback();
+    }
+
+    function loadDataFromServer(forceRefresh, callback) {
+      showLoading(true);
+      callServer('getAllData', { forceRefresh: Boolean(forceRefresh) }, res => applyServerData(res, callback));
+    }
+
+    function silentBackgroundSync() {
+      callServer('getAllData', { forceRefresh: false }, res => {
+        if (!isBusy) applyServerData(res);
+      });
+    }
+
+    function showLoading(show) {
+      document.getElementById('loading').classList.toggle('hidden', !show);
+    }
+
+    function celebrateHore(msg) {
+      document.getElementById('horeText').innerText = msg || 'Berhasil disimpan!';
+      const toast = document.getElementById('horeToast');
+      toast.classList.remove('hidden');
+      
+      if (typeof confetti === 'function') {
+        confetti({ particleCount: 85, spread: 75, origin: { y: 0.6 } });
+      }
+      setTimeout(() => toast.classList.add('hidden'), 2200);
+    }
+
+    function switchTab(tab) {
+      const tabs = ['cari', 'edit', 'tim', 'dash'];
+      tabs.forEach(t => {
+        const sec = document.getElementById('sec' + t.charAt(0).toUpperCase() + t.slice(1));
+        const nav = document.getElementById('nav' + t.charAt(0).toUpperCase() + t.slice(1));
+        if (t === tab) {
+          sec.classList.remove('hidden');
+          nav.className = 'py-2 px-0.5 rounded-2xl flex flex-col items-center justify-center gap-0.5 btn-primary transition truncate';
+        } else {
+          sec.classList.add('hidden');
+          nav.className = 'py-2 px-0.5 rounded-2xl flex flex-col items-center justify-center gap-0.5 text-[#2B1D96] hover:bg-white/40 transition truncate';
+        }
+      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function switchSubTim(sub) {
+      const subs = ['tagih', 'peminjam', 'penginput'];
+      subs.forEach(s => {
+        const view = document.getElementById('viewTim' + s.charAt(0).toUpperCase() + s.slice(1));
+        const btn = document.getElementById('subTab' + s.charAt(0).toUpperCase() + s.slice(1));
+        if (s === sub) {
+          view.classList.remove('hidden');
+          btn.className = 'py-2 rounded-xl text-xs font-black btn-primary truncate';
+        } else {
+          view.classList.add('hidden');
+          btn.className = 'py-2 rounded-xl text-xs font-extrabold text-[#2B1D96] truncate';
+        }
+      });
+    }
+
+    function getStatusBadgeHtml(item) {
+      let badge = '';
+      if (item.status === 'dipakai di gedung') {
+        badge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-[#53339E] text-white truncate">⚡ Dipakai</span>`;
+      } else if (item.status === 'Selesai masuk kotak') {
+        badge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-600 text-white truncate">✅ Selesai</span>`;
+      } else {
+        badge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-[#1E598F] text-white truncate">📦 Di Kotak</span>`;
+      }
+      if (item.kondisi !== 'Baik') {
+        badge += ` <span class="px-1.5 py-0.5 rounded-full text-[10px] font-black bg-amber-500 text-white truncate">⚠️ ${escapeHtml(item.kondisi)}</span>`;
+      }
+      if (item.originBox) {
+        badge += ` <span class="px-1.5 py-0.5 rounded-full text-[9px] font-black bg-amber-200 text-amber-950 block mt-0.5 truncate">🔄 Titipan</span>`;
+      }
+      return badge;
+    }
+
+    function levenshtein(a, b) {
+      const matrix = Array.from({ length: a.length + 1 }, () => Array(b.length + 1).fill(0));
+      for (let i = 0; i <= a.length; i++) matrix[i][0] = i;
+      for (let j = 0; j <= b.length; j++) matrix[0][j] = j;
+      for (let i = 1; i <= a.length; i++) {
+        for (let j = 1; j <= b.length; j++) {
+          const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+          matrix[i][j] = Math.min(matrix[i - 1][j] + 1, matrix[i][j - 1] + 1, matrix[i - 1][j - 1] + cost);
+        }
+      }
+      return matrix[a.length][b.length];
+    }
+
+    function runSearch() {
+      const query = document.getElementById('searchInput').value.toLowerCase().trim();
+      const stFilter = document.getElementById('filterStatus').value;
+      const boxFilter = document.getElementById('filterKotak').value;
+      const container = document.getElementById('searchResults');
+      container.innerHTML = '';
+
+      let pool = inventoryData.filter(item => {
+        if (stFilter === 'RUSAK_FILTER') {
+          if (item.kondisi === 'Baik') return false;
+        } else if (stFilter === 'TITIPAN_FILTER') {
+          if (!item.originBox) return false;
+        } else if (stFilter !== 'ALL' && item.status !== stFilter) {
+          return false;
+        }
+        if (boxFilter !== 'ALL' && item.sheetName !== boxFilter) return false;
+        return true;
+      });
+
+      if (query.length > 0) {
+        const qTokens = query.split(/\s+/);
+        pool = pool.map(item => {
+          const fullText = `${item.nama} ${item.peminjam} ${item.petugasPinjam} ${item.sheetName} ${item.catatan} ${item.originBox}`.toLowerCase();
+          const itemWords = item.nama.toLowerCase().split(/[\s/()-]+/);
+          let score = 0;
+          if (fullText.includes(query)) score += 30;
+          qTokens.forEach(qt => {
+            if (fullText.includes(qt)) {
+              score += 12;
+            } else if (qt.length >= 3) {
+              itemWords.forEach(iw => {
+                if (iw.length >= 3 && levenshtein(qt, iw) <= 2) score += 6;
+              });
+            }
+          });
+          return { item, score };
+        }).filter(x => x.score > 0).sort((a, b) => b.score - a.score).map(x => x.item);
+      }
+
+      document.getElementById('searchCountBadge').innerText = pool.length + ' Alat';
+
+      if (pool.length === 0) {
+        container.innerHTML = `<div class="p-3 text-center text-xs font-extrabold text-slate-600">Alat tidak ditemukan.</div>`;
+        return;
+      }
+
+      pool.slice(0, 45).forEach(item => {
+        const hasPhoto = item.foto && item.foto.startsWith('http');
+        const div = document.createElement('div');
+        div.className = 'liquid-subcard p-3 rounded-2xl cursor-pointer hover:bg-white/80 transition flex justify-between items-center gap-2 truncate';
+        div.onclick = () => showDetailCard(item);
+        div.innerHTML = `
+          <div class="min-w-0 flex-1 truncate">
+            <div class="font-black text-xs text-[#2B1D96] truncate flex items-center gap-1">
+              <span class="shrink-0">${hasPhoto ? '📸' : '📦'}</span>
+              <span class="truncate">${escapeHtml(item.nama)}</span>
+            </div>
+            <div class="text-[11px] font-bold text-[#1E598F] mt-0.5 truncate">
+              📦 <b>${escapeHtml(item.sheetName)}</b>
+              ${item.peminjam !== '-' ? ` • 👤 <b class="text-[#53339E]">${escapeHtml(item.peminjam)}</b>` : ''}
+            </div>
+          </div>
+          <div class="shrink-0 text-right">${getStatusBadgeHtml(item)}</div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function showDetailCard(item, skipScroll) {
+      if (!item) return;
+      currentItem = item;
+      const bTrans = boxTransport[item.sheetName] || { status: 'Tidak Dibawa' };
+      const tMeta = getTransportMeta(bTrans.status);
+
+      document.getElementById('detKotakBadge').innerText = `📦 ${item.sheetName} (${tMeta.icon} ${tMeta.key})`;
+      document.getElementById('detNama').innerText = item.nama;
+
+      const titipanBox = document.getElementById('detTitipanBox');
+      if (item.originBox) {
+        document.getElementById('detOriginBoxName').innerText = item.originBox;
+        titipanBox.classList.remove('hidden');
+      } else {
+        titipanBox.classList.add('hidden');
+      }
+
+      const banner = document.getElementById('detStatusBanner');
+      if (item.status === 'dipakai di gedung') {
+        banner.innerText = '⚡ dipakai di gedung (' + item.peminjam + ')';
+        banner.className = 'p-2.5 rounded-2xl text-center font-black text-xs bg-[#53339E] text-white truncate';
+      } else if (item.status === 'Selesai masuk kotak') {
+        banner.innerText = '✅ Selesai masuk kotak';
+        banner.className = 'p-2.5 rounded-2xl text-center font-black text-xs bg-emerald-600 text-white truncate';
+      } else {
+        banner.innerText = '📦 di kotak';
+        banner.className = 'p-2.5 rounded-2xl text-center font-black text-xs bg-[#1E598F] text-white truncate';
+      }
+
+      document.getElementById('detTabel').innerText = item.sheetName;
+      document.getElementById('detBarisNum').innerText = item.row;
+      document.getElementById('detNomorNum').innerText = item.itemNumber;
+      document.getElementById('detPeminjam').innerText = item.peminjam;
+      document.getElementById('detPetugas').innerText = item.petugasPinjam;
+      document.getElementById('detTglInfo').innerText = `${item.tglPinjam} / ${item.tglKembali}`;
+      document.getElementById('detCatatan').innerText = item.catatan;
+      document.getElementById('detPenginput').innerText = item.penginput;
+
+      const img = document.getElementById('detFoto');
+      const noFoto = document.getElementById('noFotoPlaceholder');
+      const stFoto = document.getElementById('detStatusFoto');
+
+      if (item.foto && item.foto.startsWith('http')) {
+        img.src = item.foto;
+        img.classList.remove('hidden');
+        noFoto.classList.add('hidden');
+        stFoto.innerText = '✅ Ada Foto';
+        stFoto.className = 'text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800';
+      } else {
+        img.src = '';
+        img.classList.add('hidden');
+        noFoto.classList.remove('hidden');
+        stFoto.innerText = '❌ Tanpa Foto';
+        stFoto.className = 'text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900';
+      }
+
+      const isDipakai = item.status === 'dipakai di gedung';
+      document.getElementById('btnActionPinjam').classList.toggle('hidden', isDipakai);
+      document.getElementById('btnActionKembali').classList.toggle('hidden', !isDipakai);
+
+      const card = document.getElementById('detailCard');
+      card.classList.remove('hidden');
+      if (!skipScroll) {
+        card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
+    function returnTitipanFromDetail() {
+      if (!currentItem || !currentItem.originBox || isBusy) return;
+      returnTitipanItem(currentItem);
+    }
+
+    function returnTitipanItem(item) {
+      if (isBusy) return;
+      const saved = getSavedUserName();
+      if (saved) {
+        executeReturnTitipan(item, saved);
+      } else {
+        showAppPrompt('Ketik Nama Saudara pengembali:', '', (val) => {
+          if (!val) return;
+          saveUserName(val);
+          executeReturnTitipan(item, val);
+        });
+      }
+    }
+
+    function executeReturnTitipan(item, penginputName) {
+      isBusy = true;
+      showLoading(true);
+      callServer('returnTitipanToOrigin', { currentSheetName: item.sheetName, row: item.row, expectedNamaAlat: item.nama, penginputName: penginputName }, res => {
+        celebrateHore(res.message);
+        document.getElementById('detailCard').classList.add('hidden');
+        applyServerData(res.freshData);
+      });
+    }
+
+    function renderManageBoxList() {
+      const boxName = document.getElementById('manageBoxSelect').value;
+      const container = document.getElementById('manageBoxItems');
+      container.innerHTML = '';
+
+      if (!boxName) return;
+
+      const bTrans = boxTransport[boxName] || { status: 'Tidak Dibawa', updater: '-', updatedAt: '-' };
+      const meta = getTransportMeta(bTrans.status);
+      const badgeEl = document.getElementById('boxCurrentTransportBadge');
+      badgeEl.className = `p-2.5 rounded-xl font-black text-xs text-center shadow-sm truncate ${meta.bg}`;
+      badgeEl.innerText = `${meta.icon} ${meta.label}`;
+
+      document.getElementById('boxTransportUpdater').innerText = bTrans.updater || '-';
+      document.getElementById('boxTransportTime').innerText = bTrans.updatedAt || '-';
+
+      const btnNext = document.getElementById('btnNextTransport');
+      const nextStatusKey = (bTrans.status === 'Tidak Dibawa') ? 'Siap ke Gedung' :
+                            (bTrans.status === 'Siap ke Gedung') ? 'Diangkut ke Gedung' :
+                            (bTrans.status === 'Diangkut ke Gedung') ? 'Tiba di Gedung' :
+                            (bTrans.status === 'Tiba di Gedung') ? 'Siap ke Gudang' :
+                            (bTrans.status === 'Siap ke Gudang') ? 'Diangkut ke Gudang' :
+                            (bTrans.status === 'Diangkut ke Gudang') ? 'Tiba di Gudang' : null;
+
+      if (nextStatusKey) {
+        const nextMeta = getTransportMeta(nextStatusKey);
+        btnNext.classList.remove('hidden');
+        btnNext.innerHTML = `<span class="truncate">👉 Lanjut: ${nextMeta.icon} ${nextMeta.label}</span>`;
+        btnNext.onclick = () => {
+          const saved = getSavedUserName();
+          if (!saved) openTransportModal(boxName);
+          else submitTransportStatus(boxName, nextStatusKey, saved);
+        };
+      } else {
+        btnNext.classList.add('hidden');
+      }
+
+      const items = inventoryData.filter(x => x.sheetName === boxName);
+      document.getElementById('manageBoxCount').innerText = items.length + ' Alat';
+
+      if (items.length === 0) {
+        container.innerHTML = `<div class="p-3 text-center text-xs font-bold text-slate-600">Kotak kosong.</div>`;
+        return;
+      }
+
+      items.forEach((it, idx) => {
+        const hasPhoto = it.foto && it.foto.startsWith('http');
+        const div = document.createElement('div');
+        div.className = 'liquid-subcard p-3 rounded-2xl flex justify-between items-center gap-2 truncate';
+        
+        const infoDiv = document.createElement('div');
+        infoDiv.className = 'min-w-0 flex-1 truncate';
+        infoDiv.innerHTML = `
+          <div class="font-black text-xs text-[#2B1D96] truncate">
+            ${idx + 1}. ${escapeHtml(it.nama)} ${hasPhoto ? '📸' : ''}
+          </div>
+          <div class="text-[11px] font-bold text-slate-600 mt-0.5 truncate">
+            Baris ${it.row} ${it.peminjam !== '-' ? `• 👤 <b>${escapeHtml(it.peminjam)}</b>` : ''}
+          </div>
+          <div class="mt-1">${getStatusBadgeHtml(it)}</div>
+        `;
+        
+        const btnWrap = document.createElement('div');
+        btnWrap.className = 'flex flex-col gap-1 shrink-0';
+
+        const btnEdit = document.createElement('button');
+        btnEdit.className = 'btn-ocean px-3.5 py-1.5 rounded-xl text-[11px] font-black truncate';
+        btnEdit.innerText = '🛠️ Edit';
+        btnEdit.onclick = () => openEditModal(it);
+        btnWrap.appendChild(btnEdit);
+
+        if (it.originBox) {
+          const btnPulang = document.createElement('button');
+          btnPulang.className = 'bg-amber-600 text-white px-2 py-1 rounded-xl text-[10px] font-black truncate';
+          btnPulang.innerText = '↩️ Ke Asal';
+          btnPulang.onclick = () => returnTitipanItem(it);
+          btnWrap.appendChild(btnPulang);
+        }
+
+        div.appendChild(infoDiv);
+        div.appendChild(btnWrap);
+        container.appendChild(div);
+      });
+    }
+
+    function openTransportModalForCurrentBox() {
+      const boxName = document.getElementById('manageBoxSelect').value;
+      if (boxName) openTransportModal(boxName);
+    }
+
+    function openTransportModal(boxName) {
+      activeTransportBox = boxName;
+      document.getElementById('mdlTransBoxName').innerText = boxName;
+      document.getElementById('mdlTransUpdater').value = getSavedUserName();
+
+      const curStatus = (boxTransport[boxName] && boxTransport[boxName].status) || 'Tidak Dibawa';
+      const optContainer = document.getElementById('mdlTransportOptions');
+      optContainer.innerHTML = '';
+
+      TRANSPORT_STEPS.forEach(st => {
+        const isCurrent = st.key === curStatus;
+        const btn = document.createElement('button');
+        btn.className = `w-full p-2.5 rounded-xl text-left font-black text-xs flex justify-between items-center transition border-2 truncate ${isCurrent ? 'border-[#2B1D96] ' + st.bg : 'border-white bg-white/80 text-[#2B1D96]'}`;
+        btn.innerHTML = `
+          <span class="truncate">${st.icon} ${st.label}</span>
+          ${isCurrent ? '<span class="text-[9px] px-2 py-0.5 rounded-full bg-black/20 shrink-0">Aktif</span>' : '<span class="text-[10px] shrink-0">Pilih</span>'}
+        `;
+        btn.onclick = () => submitTransportStatus(boxName, st.key);
+        optContainer.appendChild(btn);
+      });
+
+      document.getElementById('transportModal').classList.remove('hidden');
+    }
+
+    function submitTransportStatus(boxName, newStatus, directUpdater) {
+      if (isBusy) return;
+      const updater = directUpdater || document.getElementById('mdlTransUpdater').value.trim();
+      if (!updater) {
+        showAppAlert('Mohon ketik Nama Saudara terlebih dahulu!');
+        return;
+      }
+
+      const isTibaGudang = (newStatus === 'Tiba di Gudang' || newStatus === 'Tiba di Gudang (Selesai)');
+      const isGoingHome = (newStatus === 'Siap ke Gudang' || newStatus === 'Diangkut ke Gudang' || isTibaGudang);
+      if (isGoingHome) {
+        const unreturned = inventoryData.filter(x => x.sheetName === boxName && x.status === 'dipakai di gedung' && x.kondisi === 'Baik');
+        if (unreturned.length > 0) {
+          const listStr = unreturned.map(u => `• ${u.nama} (Dipakai: ${u.peminjam})`).join('\n');
+          showAppAlert(`Masih ada ${unreturned.length} alat di kotak "${boxName}" yang masih berstatus "dipakai di gedung":\n\n${listStr}\n\nSilakan kembalikan menjadi "Selesai masuk kotak" atau tandai Rusak/Hilang terlebih dahulu!`, '⚠️ Kotak Belum Bisa Pulang');
+          return;
+        }
+      }
+
+      const runUpdate = () => {
+        saveUserName(updater);
+        isBusy = true;
+        closeModal('transportModal');
+        showLoading(true);
+
+        callServer('updateBoxTransportStatus', { boxName: boxName, newStatus: newStatus, updaterName: updater }, res => {
+          celebrateHore(res.message);
+          applyServerData(res.freshData);
+        });
+      };
+
+      if (isTibaGudang) {
+        showAppConfirm(
+          `Kotak "${boxName}" sudah Tiba di Gudang Balai?\n\nSemua status barang di kotak ini akan otomatis di-reset bersih menjadi "di kotak" untuk acara berikutnya.`,
+          runUpdate,
+          '✅ Konfirmasi Tiba di Gudang'
+        );
+      } else {
+        runUpdate();
+      }
+    }
+
+    function promptRenameCurrentBox() {
+      if (isBusy) return;
+      const oldName = document.getElementById('manageBoxSelect').value;
+      if (!oldName) return;
+      showAppPrompt('Ketik nama baru untuk kotak "' + oldName + '":', oldName, (newName) => {
+        if (!newName || newName === oldName) return;
+        isBusy = true;
+        showLoading(true);
+        callServer('renameBoxSheet', { oldName: oldName, newName: newName }, res => {
+          celebrateHore(res.message);
+          applyServerData(res.freshData);
+        });
+      }, '✏️ Ganti Nama Kotak');
+    }
+
+    function openAddModal() {
+      document.getElementById('newNama').value = '';
+      document.getElementById('newPenginput').value = getSavedUserName();
+      document.getElementById('newCatatan').value = '';
+      document.getElementById('newFoto').value = '';
+      document.getElementById('previewNew').classList.add('hidden');
+      base64New = null; fileNameNew = null;
+      document.getElementById('addModal').classList.remove('hidden');
+    }
+
+    function openAddModalForCurrentBox() {
+      const currentBox = document.getElementById('manageBoxSelect').value;
+      openAddModal();
+      if (currentBox) {
+        document.getElementById('newSheetSelect').value = currentBox;
+        onNewSheetChange();
+      }
+    }
+
+    function openPinjamModal() {
+      if (!currentItem) return;
+      document.getElementById('mdlPinjamNamaAlat').innerText = currentItem.nama;
+      document.getElementById('mdlPinjamKotak').innerText = 'Kotak: ' + currentItem.sheetName;
+      document.getElementById('mdlPeminjamNama').value = currentItem.peminjam !== '-' ? currentItem.peminjam : '';
+      document.getElementById('mdlPetugasNama').value = getSavedUserName() || (currentItem.petugasPinjam !== '-' ? currentItem.petugasPinjam : '');
+      document.getElementById('mdlPinjamCatatan').value = currentItem.catatan !== '-' ? currentItem.catatan : '';
+      document.getElementById('pinjamModal').classList.remove('hidden');
+    }
+
+    function submitPinjam() {
+      if (!currentItem || isBusy) return;
+      const peminjam = document.getElementById('mdlPeminjamNama').value.trim();
+      const petugas = document.getElementById('mdlPetugasNama').value.trim();
+      const catatan = document.getElementById('mdlPinjamCatatan').value.trim() || '-';
+
+      if (!peminjam || !petugas) return showAppAlert('Nama Peminjam dan PIC wajib diisi!');
+
+      saveUserName(petugas);
+      isBusy = true;
+      closeModal('pinjamModal');
+      showLoading(true);
+
+      const targetSheet = currentItem.sheetName;
+      const targetName = currentItem.nama;
+
+      callServer('updateItemData', {
+        payload: {
+          oldSheetName: currentItem.sheetName,
+          newSheetName: currentItem.sheetName,
+          row: currentItem.row,
+          originalNamaAlat: currentItem.nama,
+          namaAlat: currentItem.nama,
+          status: 'dipakai di gedung',
+          peminjam: peminjam,
+          petugasPinjam: petugas,
+          catatan: catatan,
+          penginput: petugas
+        }
+      }, res => {
+        celebrateHore('Dipinjam: ' + peminjam);
+        applyServerData(res.freshData, () => {
+          const updated = inventoryData.find(x => x.sheetName === targetSheet && x.nama === targetName);
+          if (updated) showDetailCard(updated, true);
+        });
+      });
+    }
+
+    function quickReturnFromDetail() {
+      if (!currentItem || isBusy) return;
+      isBusy = true;
+      showLoading(true);
+      const targetSheet = currentItem.sheetName;
+      const targetName = currentItem.nama;
+
+      callServer('quickReturnItem', { sheetName: currentItem.sheetName, row: currentItem.row, expectedNamaAlat: currentItem.nama }, res => {
+        celebrateHore(res.message);
+        applyServerData(res.freshData, () => {
+          const updated = inventoryData.find(x => x.sheetName === targetSheet && x.nama === targetName);
+          if (updated) showDetailCard(updated, true);
+        });
+      });
+    }
+
+    function openEditModal(item) {
+      if (!item) return;
+      currentItem = item;
+      document.getElementById('edtNama').value = item.nama;
+      document.getElementById('edtSheet').value = item.sheetName;
+      document.getElementById('edtStatus').value = item.status;
+      document.getElementById('edtPeminjam').value = item.peminjam !== '-' ? item.peminjam : '';
+      document.getElementById('edtPetugas').value = item.petugasPinjam !== '-' ? item.petugasPinjam : '';
+      document.getElementById('edtCatatan').value = item.catatan !== '-' ? item.catatan : '';
+      document.getElementById('edtPenginput').value = getSavedUserName() || (item.penginput !== '-' ? item.penginput : '');
+      document.getElementById('edtFoto').value = '';
+      document.getElementById('previewEdt').classList.add('hidden');
+      
+      document.getElementById('edtAsalLabel').innerText = item.originBox || item.sheetName;
+      document.getElementById('edtTitipanOptionWrap').classList.add('hidden');
+      document.getElementById('edtIsTitipan').checked = true;
+
+      base64Edt = null; fileNameEdt = null;
+      document.getElementById('editModal').classList.remove('hidden');
+    }
+
+    function onEdtSheetChange() {
+      if (!currentItem) return;
+      const newBox = document.getElementById('edtSheet').value;
+      const wrap = document.getElementById('edtTitipanOptionWrap');
+      wrap.classList.toggle('hidden', newBox === currentItem.sheetName);
+    }
+
+    function tandaiKondisiCepat(label) {
+      const catEl = document.getElementById('edtCatatan');
+      if (!catEl.value.toUpperCase().includes(label)) {
+        catEl.value = (catEl.value && catEl.value !== '-') ? `${catEl.value} (${label})` : label;
+      }
+    }
+
+    function submitEditItem() {
+      if (!currentItem || isBusy) return;
+      const namaAlat = document.getElementById('edtNama').value.trim();
+      const newSheet = document.getElementById('edtSheet').value;
+      const status = document.getElementById('edtStatus').value;
+      const peminjam = document.getElementById('edtPeminjam').value.trim() || '-';
+      const petugas = document.getElementById('edtPetugas').value.trim() || '-';
+      const catatan = document.getElementById('edtCatatan').value.trim() || '-';
+      const penginput = document.getElementById('edtPenginput').value.trim();
+      const isTitipan = document.getElementById('edtIsTitipan').checked;
+
+      if (!namaAlat || !penginput) return showAppAlert('Nama Alat dan Nama Saudara wajib diisi!');
+
+      saveUserName(penginput);
+      isBusy = true;
+      closeModal('editModal');
+      showLoading(true);
+
+      callServer('updateItemData', {
+        payload: {
+          oldSheetName: currentItem.sheetName,
+          newSheetName: newSheet,
+          row: currentItem.row,
+          originalNamaAlat: currentItem.nama,
+          namaAlat: namaAlat,
+          status: status,
+          peminjam: peminjam,
+          petugasPinjam: petugas,
+          catatan: catatan,
+          penginput: penginput,
+          isTitipan: isTitipan,
+          fileData: base64Edt,
+          fileName: fileNameEdt
+        }
+      }, res => {
+        celebrateHore(res.message);
+        applyServerData(res.freshData, () => {
+          const updated = inventoryData.find(x => x.sheetName === newSheet && x.nama === namaAlat);
+          if (updated && !document.getElementById('secCari').classList.contains('hidden')) {
+            showDetailCard(updated, true);
+          }
+        });
+      });
+    }
+
+    function confirmDeleteFromEdit() {
+      if (!currentItem || isBusy) return;
+      showAppConfirm(`Hapus permanen "${currentItem.nama}" dari kotak ${currentItem.sheetName}?`, () => {
+        isBusy = true;
+        closeModal('editModal');
+        showLoading(true);
+        callServer('deleteItemData', { sheetName: currentItem.sheetName, row: currentItem.row, expectedNamaAlat: currentItem.nama }, res => {
+          celebrateHore(res.message);
+          document.getElementById('detailCard').classList.add('hidden');
+          currentItem = null;
+          applyServerData(res.freshData);
+        });
+      }, '🗑️ Hapus Alat');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.add('hidden');
+    }
+
+    function populateDropdowns() {
+      const filterKotak = document.getElementById('filterKotak');
+      const manageBox = document.getElementById('manageBoxSelect');
+      const newSheetSelect = document.getElementById('newSheetSelect');
+      const edtSheet = document.getElementById('edtSheet');
+
+      const prevFilter = filterKotak.value || 'ALL';
+      const prevManage = manageBox.value || (sheetList[0] || '');
+
+      filterKotak.innerHTML = '<option value="ALL">📦 Semua Kotak</option>';
+      manageBox.innerHTML = '';
+      newSheetSelect.innerHTML = '';
+      edtSheet.innerHTML = '';
+
+      sheetList.forEach(s => {
+        const safeS = escapeHtml(s);
+        const bTrans = boxTransport[s] || { status: 'Tidak Dibawa' };
+        const tMeta = getTransportMeta(bTrans.status);
+        filterKotak.innerHTML += `<option value="${safeS}">${tMeta.icon} ${safeS}</option>`;
+        manageBox.innerHTML += `<option value="${safeS}">${tMeta.icon} ${safeS} (${tMeta.key})</option>`;
+        newSheetSelect.innerHTML += `<option value="${safeS}">📦 ${safeS}</option>`;
+        edtSheet.innerHTML += `<option value="${safeS}">📦 ${safeS}</option>`;
+      });
+      newSheetSelect.innerHTML += `<option value="__NEW__">➕ Buat Kotak Baru...</option>`;
+
+      filterKotak.value = prevFilter;
+      if (sheetList.includes(prevManage)) manageBox.value = prevManage;
+
+      onNewSheetChange();
+      populateTimDropdowns();
+    }
+
+    function onNewSheetChange() {
+      const val = document.getElementById('newSheetSelect').value;
+      document.getElementById('newBoxNameWrap').classList.toggle('hidden', val !== '__NEW__');
+    }
+
+    function handlePhotoUpload(event, mode) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 1000;
+          let width = img.width, height = img.height;
+          if (width > MAX_WIDTH) {
+            height = Math.round((height * MAX_WIDTH) / width);
+            width = MAX_WIDTH;
+          }
+          canvas.width = width; canvas.height = height;
+          canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+          const compressed = canvas.toDataURL('image/jpeg', 0.8);
+
+          if (mode === 'new') {
+            base64New = compressed;
+            fileNameNew = file.name.replace(/\.[^/.]+$/, "") + ".jpg";
+            const p = document.getElementById('previewNew');
+            p.src = compressed; p.classList.remove('hidden');
+          } else {
+            base64Edt = compressed;
+            fileNameEdt = file.name.replace(/\.[^/.]+$/, "") + ".jpg";
+            const p = document.getElementById('previewEdt');
+            p.src = compressed; p.classList.remove('hidden');
+          }
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function submitNewItem() {
+      if (isBusy) return;
+      let targetSheet = document.getElementById('newSheetSelect').value;
+      if (targetSheet === '__NEW__') {
+        targetSheet = document.getElementById('newBoxCustomName').value.trim();
+        if (!targetSheet) return showAppAlert('Ketik nama kotak baru!');
+      }
+
+      const namaAlat = document.getElementById('newNama').value.trim();
+      const penginput = document.getElementById('newPenginput').value.trim();
+      const status = document.getElementById('newStatus').value;
+      const catatan = document.getElementById('newCatatan').value.trim() || '-';
+
+      if (!namaAlat || !penginput) return showAppAlert('Nama Alat dan Nama Saudara wajib diisi!');
+
+      saveUserName(penginput);
+      isBusy = true;
+      closeModal('addModal');
+      showLoading(true);
+
+      callServer('addNewData', {
+        payload: {
+          sheetName: targetSheet,
+          namaAlat: namaAlat,
+          penginput: penginput,
+          status: status,
+          peminjam: '-',
+          petugasPinjam: '-',
+          catatan: catatan,
+          fileData: base64New,
+          fileName: fileNameNew
+        }
+      }, res => {
+        celebrateHore(res.message);
+        applyServerData(res.freshData);
+      });
+    }
+
+    function renderDashboard() {
+      const diKotak = inventoryData.filter(x => x.status === 'di kotak');
+      const dipakai = inventoryData.filter(x => x.status === 'dipakai di gedung');
+      const selesai = inventoryData.filter(x => x.status === 'Selesai masuk kotak');
+      const masalah = inventoryData.filter(x => x.kondisi !== 'Baik');
+      const titipan = inventoryData.filter(x => x.originBox);
+
+      document.getElementById('statDiKotak').innerText = diKotak.length;
+      document.getElementById('statDipakai').innerText = dipakai.length;
+      document.getElementById('statSelesai').innerText = selesai.length;
+      document.getElementById('statRusak').innerText = masalah.length;
+
+      document.getElementById('badgeTotalKotak').innerText = sheetList.length + ' Kotak';
+      const elTrans = document.getElementById('dashListTransportKotak');
+      elTrans.innerHTML = '';
+
+      sheetList.forEach(sName => {
+        const bTrans = boxTransport[sName] || { status: 'Tidak Dibawa', updater: '-', updatedAt: '-' };
+        const meta = getTransportMeta(bTrans.status);
+        const boxItems = inventoryData.filter(x => x.sheetName === sName);
+        const dipakaiCount = boxItems.filter(x => x.status === 'dipakai di gedung' && x.kondisi === 'Baik').length;
+
+        const div = document.createElement('div');
+        div.className = 'liquid-subcard p-3 rounded-2xl flex justify-between items-center gap-2 cursor-pointer hover:bg-white/80 transition truncate';
+        div.onclick = () => openTransportModal(sName);
+        div.innerHTML = `
+          <div class="min-w-0 flex-1 truncate">
+            <strong class="text-xs font-black text-[#2B1D96] block truncate">📦 ${escapeHtml(sName)}</strong>
+            <span class="text-[11px] font-bold text-slate-600 truncate block">
+              ${boxItems.length} alat ${dipakaiCount > 0 ? `• <b class="text-rose-600">${dipakaiCount} dipakai</b>` : '• <b class="text-emerald-700">Lengkap</b>'}
+            </span>
+          </div>
+          <span class="px-2.5 py-1.5 rounded-xl text-[10px] font-black shrink-0 shadow-sm ${meta.bg} truncate">
+            ${meta.icon} ${escapeHtml(meta.key)}
+          </span>
+        `;
+        elTrans.appendChild(div);
+      });
+
+      document.getElementById('badgeCountTitipan').innerText = titipan.length;
+      const elTitipan = document.getElementById('dashListTitipan');
+      elTitipan.innerHTML = '';
+
+      if (titipan.length === 0) {
+        elTitipan.innerHTML = `<div class="p-3 rounded-2xl bg-emerald-100 text-emerald-900 text-xs font-black text-center">✅ Tidak ada barang titipan.</div>`;
+      } else {
+        titipan.forEach(it => {
+          const div = document.createElement('div');
+          div.className = 'liquid-subcard p-3 rounded-2xl flex justify-between items-center gap-2 text-xs truncate';
+          div.innerHTML = `
+            <div class="min-w-0 flex-1 truncate">
+              <strong class="font-black text-[#2B1D96] block truncate">${escapeHtml(it.nama)}</strong>
+              <span class="text-[11px] font-bold text-amber-900 truncate block">Di: <b>${escapeHtml(it.sheetName)}</b> ➔ Asal: <b>${escapeHtml(it.originBox)}</b></span>
+            </div>
+          `;
+          const btn = document.createElement('button');
+          btn.className = 'bg-amber-600 text-white font-black px-3 py-1.5 rounded-xl text-[10px] shrink-0 shadow';
+          btn.innerText = '↩️ Pulang';
+          btn.onclick = () => returnTitipanItem(it);
+          div.appendChild(btn);
+          elTitipan.appendChild(div);
+        });
+      }
+
+      const mapPeminjam = {};
+      dipakai.forEach(it => {
+        const p = it.peminjam !== '-' ? it.peminjam : 'Tanpa Nama';
+        if (!mapPeminjam[p]) mapPeminjam[p] = [];
+        mapPeminjam[p].push(it);
+      });
+      const keysPeminjam = Object.keys(mapPeminjam).sort();
+      document.getElementById('badgeCountPeminjam').innerText = keysPeminjam.length;
+      const elPeminjam = document.getElementById('dashListPeminjam');
+      elPeminjam.innerHTML = '';
+
+      if (keysPeminjam.length === 0) {
+        elPeminjam.innerHTML = `<div class="p-3 rounded-2xl bg-emerald-100 text-emerald-900 text-xs font-black text-center">🎉 Semua barang sudah kembali!</div>`;
+      } else {
+        keysPeminjam.forEach(nama => {
+          const items = mapPeminjam[nama];
+          const div = document.createElement('div');
+          div.className = 'liquid-subcard p-3 rounded-2xl flex justify-between items-center cursor-pointer text-xs truncate';
+          div.onclick = () => {
+            switchTab('tim');
+            switchSubTim('peminjam');
+            document.getElementById('selNamaPeminjam').value = nama;
+            renderDaftarPeminjam();
+          };
+          div.innerHTML = `
+            <div class="min-w-0 flex-1 truncate">
+              <strong class="font-black text-[#2B1D96] truncate block">👤 ${escapeHtml(nama)}</strong>
+              <span class="text-[11px] font-bold text-slate-600 truncate block">PIC: ${escapeHtml(items[0].petugasPinjam)}</span>
+            </div>
+            <span class="bg-[#53339E] text-white font-black text-xs px-2.5 py-1 rounded-xl shrink-0">${items.length} Alat 👉</span>
+          `;
+          elPeminjam.appendChild(div);
+        });
+      }
+
+      document.getElementById('badgeCountMasalah').innerText = masalah.length;
+      const elMasalah = document.getElementById('dashListMasalah');
+      elMasalah.innerHTML = '';
+
+      if (masalah.length === 0) {
+        elMasalah.innerHTML = `<div class="p-3 rounded-2xl bg-emerald-100 text-emerald-900 text-xs font-black text-center">✅ Semua alat baik!</div>`;
+      } else {
+        masalah.forEach(it => {
+          const div = document.createElement('div');
+          div.className = 'liquid-subcard p-3 rounded-2xl flex justify-between items-center cursor-pointer text-xs truncate';
+          div.onclick = () => openEditModal(it);
+          div.innerHTML = `
+            <div class="min-w-0 flex-1 truncate">
+              <strong class="font-black text-[#2B1D96] truncate block">${escapeHtml(it.nama)}</strong>
+              <span class="text-[11px] font-bold text-slate-600 truncate block">📦 ${escapeHtml(it.sheetName)} • <b class="text-rose-700">${escapeHtml(it.catatan)}</b></span>
+            </div>
+            <span class="px-2.5 py-1 rounded-full text-[10px] font-black bg-amber-500 text-white shrink-0">${escapeHtml(it.kondisi)}</span>
+          `;
+          elMasalah.appendChild(div);
+        });
+      }
+    }
+
+    function populateTimDropdowns() {
+      const selPetugas = document.getElementById('selPetugasInventaris');
+      const selPeminjam = document.getElementById('selNamaPeminjam');
+      const selPenginput = document.getElementById('selNamaPenginput');
+
+      const prevPetugas = selPetugas.value;
+      const prevPeminjam = selPeminjam.value;
+      const prevPenginput = selPenginput.value;
+
+      const setPetugas = new Set();
+      const setPeminjam = new Set();
+      const setPenginput = new Set();
+
+      inventoryData.forEach(item => {
+        if (item.petugasPinjam && item.petugasPinjam !== '-') setPetugas.add(item.petugasPinjam);
+        if (item.peminjam && item.peminjam !== '-') setPeminjam.add(item.peminjam);
+        if (item.penginput && item.penginput !== '-') setPenginput.add(item.penginput);
+      });
+
+      selPetugas.innerHTML = '<option value="">-- Pilih Tim Inventaris --</option>';
+      Array.from(setPetugas).sort().forEach(n => selPetugas.innerHTML += `<option value="${escapeHtml(n)}">🛡️ ${escapeHtml(n)}</option>`);
+
+      selPeminjam.innerHTML = '<option value="">-- Pilih Nama Peminjam --</option>';
+      Array.from(setPeminjam).sort().forEach(n => selPeminjam.innerHTML += `<option value="${escapeHtml(n)}">👤 ${escapeHtml(n)}</option>`);
+
+      selPenginput.innerHTML = '<option value="">-- Pilih Nama Saudara --</option>';
+      Array.from(setPenginput).sort().forEach(n => selPenginput.innerHTML += `<option value="${escapeHtml(n)}">✍️ ${escapeHtml(n)}</option>`);
+
+      if (prevPetugas) selPetugas.value = prevPetugas;
+      if (prevPeminjam) selPeminjam.value = prevPeminjam;
+      if (prevPenginput) selPenginput.value = prevPenginput;
+    }
+
+    function returnItemById(id) {
+      if (isBusy) return;
+      const item = inventoryData.find(x => x.id === id);
+      if (!item) return;
+      isBusy = true;
+      showLoading(true);
+      callServer('quickReturnItem', { sheetName: item.sheetName, row: item.row, expectedNamaAlat: item.nama }, res => {
+        celebrateHore(res.message);
+        applyServerData(res.freshData);
+      });
+    }
+
+    function renderTagihanPetugas() {
+      const pic = document.getElementById('selPetugasInventaris').value;
+      const summaryBox = document.getElementById('petugasSummaryBox');
+      const clientList = document.getElementById('petugasClientList');
+      clientList.innerHTML = '';
+
+      if (!pic) {
+        summaryBox.classList.add('hidden');
+        return;
+      }
+
+      const activeItems = inventoryData.filter(x => x.petugasPinjam === pic && x.status === 'dipakai di gedung');
+      const mapClient = {};
+      activeItems.forEach(it => {
+        const c = it.peminjam || 'Tanpa Nama';
+        if (!mapClient[c]) mapClient[c] = [];
+        mapClient[c].push(it);
+      });
+
+      const clients = Object.keys(mapClient).sort();
+      summaryBox.classList.remove('hidden');
+      document.getElementById('petugasTotalBarang').innerText = activeItems.length + ' Alat';
+      document.getElementById('petugasTotalClient').innerText = clients.length + ' Orang';
+
+      if (clients.length === 0) {
+        clientList.innerHTML = `<div class="p-3 rounded-2xl bg-emerald-100 text-emerald-900 text-xs font-black text-center">🎉 Semua pinjaman PIC ${escapeHtml(pic)} sudah kembali!</div>`;
+        return;
+      }
+
+      clients.forEach((clientName, cIdx) => {
+        const items = mapClient[clientName];
+        const waRawText = `${clientName}\n` + items.map(x => `- ${x.nama} (Kotak: ${x.sheetName})`).join('\n');
+
+        const card = document.createElement('div');
+        card.className = 'liquid-subcard p-3.5 rounded-2xl space-y-2.5';
+
+        const headerDiv = document.createElement('div');
+        headerDiv.className = 'flex justify-between items-center border-b border-slate-300 pb-1.5';
+        headerDiv.innerHTML = `
+          <h4 class="text-xs font-black text-[#2B1D96] truncate">👤 ${escapeHtml(clientName)}</h4>
+          <span class="bg-[#53339E] text-white font-black text-xs px-2.5 py-0.5 rounded-full shrink-0">${items.length} Alat</span>
+        `;
+        card.appendChild(headerDiv);
+
+        const listWrap = document.createElement('div');
+        listWrap.className = 'space-y-1.5';
+        items.forEach(it => {
+          const rowDiv = document.createElement('div');
+          rowDiv.className = 'flex justify-between items-center bg-white/80 p-2.5 rounded-xl text-xs gap-2 truncate';
+          rowDiv.innerHTML = `
+            <div class="min-w-0 flex-1 truncate">
+              <strong class="text-[#2B1D96] font-black truncate block">${escapeHtml(it.nama)}</strong>
+              <span class="text-[11px] font-bold text-slate-600">📦 ${escapeHtml(it.sheetName)}</span>
+            </div>
+          `;
+          const btnRet = document.createElement('button');
+          btnRet.className = 'bg-emerald-600 text-white font-black px-3 py-1.5 rounded-xl text-xs shrink-0 shadow';
+          btnRet.innerText = '✅ Masuk Kotak';
+          btnRet.onclick = () => returnItemById(it.id);
+          rowDiv.appendChild(btnRet);
+          listWrap.appendChild(rowDiv);
+        });
+        card.appendChild(listWrap);
+
+        const btnWa = document.createElement('button');
+        btnWa.id = 'btnWaPic_' + cIdx;
+        btnWa.className = 'w-full btn-primary font-black py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 truncate';
+        btnWa.innerHTML = `<span>📋</span> <span>Copy ke WA</span>`;
+        btnWa.onclick = () => copyWaWithHore(waRawText, btnWa.id);
+        card.appendChild(btnWa);
+
+        clientList.appendChild(card);
+      });
+    }
+
+    function copyWaWithHore(text, btnId) {
+      navigator.clipboard.writeText(text).then(() => {
+        celebrateHore('Disalin ke Clipboard!');
+        const btn = document.getElementById(btnId);
+        if (btn) {
+          btn.className = "w-full bg-emerald-600 text-white font-black py-2.5 rounded-xl text-xs shadow-md flex items-center justify-center gap-1.5";
+          btn.innerHTML = `<span>✅</span> <span>Siap Tempel di WA</span>`;
+        }
+      });
+    }
+
+    function renderDaftarPeminjam() {
+      const nama = document.getElementById('selNamaPeminjam').value;
+      const listEl = document.getElementById('peminjamBarangList');
+      const btnWa = document.getElementById('btnCopyWaClient');
+      listEl.innerHTML = '';
+
+      if (!nama) {
+        btnWa.classList.add('hidden');
+        return;
+      }
+
+      const items = inventoryData.filter(x => x.peminjam === nama);
+      let waLines = [nama];
+
+      items.forEach((it, idx) => {
+        waLines.push(`- ${it.nama} (${it.status} - Kotak: ${it.sheetName})`);
+        const isDipakai = it.status === 'dipakai di gedung';
+        
+        const rowDiv = document.createElement('div');
+        rowDiv.className = 'liquid-subcard p-3 rounded-2xl flex justify-between items-center text-xs gap-2 truncate';
+        rowDiv.innerHTML = `
+          <div class="min-w-0 flex-1 truncate">
+            <strong class="text-[#2B1D96] font-black truncate block">${escapeHtml(it.nama)}</strong>
+            <span class="text-[11px] font-bold text-slate-600 truncate block">📦 ${escapeHtml(it.sheetName)} • Status: <b>${escapeHtml(it.status)}</b></span>
+          </div>
+        `;
+
+        if (isDipakai) {
+          const btn = document.createElement('button');
+          btn.className = 'bg-emerald-600 text-white font-black px-2.5 py-1.5 rounded-xl text-xs shrink-0';
+          btn.innerText = '✅ Masuk Kotak';
+          btn.onclick = () => returnItemById(it.id);
+          rowDiv.appendChild(btn);
+        } else {
+          const badgeWrap = document.createElement('div');
+          badgeWrap.className = 'shrink-0';
+          badgeWrap.innerHTML = getStatusBadgeHtml(it);
+          rowDiv.appendChild(badgeWrap);
+        }
+        listEl.appendChild(rowDiv);
+      });
+
+      currentWaTextClient = waLines.join('\n');
+      btnWa.className = "w-full btn-primary font-black py-3.5 rounded-2xl text-sm shadow-lg flex items-center justify-center gap-2 truncate";
+      document.getElementById('txtCopyWaClient').innerText = "Copy ke WA";
+      btnWa.classList.remove('hidden');
+    }
+
+    function copyClientToWa() {
+      if (!currentWaTextClient) return;
+      copyWaWithHore(currentWaTextClient, 'btnCopyWaClient');
+    }
+
+    function renderDaftarPenginput() {
+      const nama = document.getElementById('selNamaPenginput').value;
+      const listEl = document.getElementById('penginputBarangList');
+      listEl.innerHTML = '';
+      if (!nama) return;
+
+      const items = inventoryData.filter(x => x.penginput === nama);
+      items.forEach((it, idx) => {
+        const div = document.createElement('div');
+        div.className = 'liquid-subcard p-3 rounded-2xl flex justify-between items-center text-xs cursor-pointer truncate';
+        div.onclick = () => openEditModal(it);
+        div.innerHTML = `
+          <div class="min-w-0 flex-1 truncate">
+            <strong class="text-[#2B1D96] font-black truncate block">${escapeHtml(it.nama)}</strong>
+            <span class="text-[11px] font-bold text-slate-600 truncate block">📦 ${escapeHtml(it.sheetName)} (Baris ${it.row})</span>
+          </div>
+          <div class="shrink-0">${getStatusBadgeHtml(it)}</div>
+        `;
+        listEl.appendChild(div);
+      });
+    }
+
+    function zoomImage(src) {
+      if (!src) return;
+      document.getElementById('zoomedImg').src = src;
+      document.getElementById('zoomModal').classList.remove('hidden');
+    }
+  </script>
 </body>
 </html>
