@@ -650,6 +650,11 @@
 
           <div>
             <label class="font-black text-[#1B1B30] block mb-0.5">📸 Foto</label>
+            <div id="edtCurrentFotoWrap" class="hidden mb-2 liquid-subcard rounded-2xl p-2 flex items-center gap-3">
+              <img id="edtCurrentFoto" class="w-16 h-16 rounded-xl object-cover shrink-0" alt="">
+              <div id="edtCurrentFotoNote" class="min-w-0 flex-1 text-[11px] font-semibold text-[#6B6B85]">Foto saat ini</div>
+              <button type="button" id="btnHapusFoto" onclick="setRemoveFoto(!removeFotoEdt)" class="bg-rose-100 text-rose-700 border border-rose-300 font-bold px-3 py-2 rounded-xl text-[11px] shrink-0">Hapus Foto</button>
+            </div>
             <div class="border-2 border-dashed border-[#B9A7F5] p-2.5 text-center rounded-2xl relative bg-white/70">
               <input type="file" id="edtFoto" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept="image/*" onchange="handlePhotoUpload(event, 'edit')">
               <span class="text-[#1B1B30] font-black text-xs">📸 Ambil / Ganti Foto</span>
@@ -1598,7 +1603,25 @@
       document.getElementById('edtIsTitipan').checked = true;
 
       base64Edt = null; fileNameEdt = null;
+      const fotoAda = !!(item.foto && item.foto.startsWith('http'));
+      document.getElementById('edtCurrentFotoWrap').classList.toggle('hidden', !fotoAda);
+      document.getElementById('edtCurrentFoto').src = fotoAda ? item.foto : '';
+      setRemoveFoto(false);
       document.getElementById('editModal').classList.remove('hidden');
+    }
+
+    // Tandai foto lama untuk dihapus (dieksekusi saat tombol Simpan ditekan)
+    let removeFotoEdt = false;
+    function setRemoveFoto(flag) {
+      removeFotoEdt = flag;
+      const note = document.getElementById('edtCurrentFotoNote');
+      const btn = document.getElementById('btnHapusFoto');
+      const img = document.getElementById('edtCurrentFoto');
+      if (!note) return;
+      note.textContent = flag ? 'Foto akan dihapus saat Simpan' : 'Foto saat ini';
+      note.classList.toggle('text-rose-600', flag);
+      btn.textContent = flag ? 'Batal Hapus' : 'Hapus Foto';
+      img.style.opacity = flag ? '.35' : '1';
     }
 
     function onEdtSheetChange() {
@@ -1638,6 +1661,8 @@
       const orig = { sheetName: currentItem.sheetName, row: currentItem.row, nama: currentItem.nama, originBox: currentItem.originBox };
       const patchEdit = { nama: namaAlat, status: status, peminjam: peminjam, petugasPinjam: petugas, catatan: catatan, penginput: penginput, kondisi: kondisiLokal(status, catatan) };
       if (serial !== undefined) patchEdit.serial = serial;
+      const hapusFoto = removeFotoEdt && !base64Edt;
+      if (hapusFoto) patchEdit.foto = '';
       if (status === 'dipakai di gedung') { patchEdit.tglPinjam = todayStr(); patchEdit.tglKembali = '-'; }
       else if (status === 'Selesai masuk kotak') { patchEdit.tglKembali = todayStr(); }
       if (newSheet !== orig.sheetName) {
@@ -1660,6 +1685,7 @@
           catatan: catatan,
           penginput: penginput,
           serial: serial,
+          removePhoto: hapusFoto,
           isTitipan: isTitipan,
           fileData: base64Edt,
           fileName: fileNameEdt
@@ -1765,6 +1791,7 @@
           } else {
             base64Edt = compressed;
             fileNameEdt = file.name.replace(/\.[^/.]+$/, "") + ".jpg";
+            setRemoveFoto(false);
             const p = document.getElementById('previewEdt');
             p.src = compressed; p.classList.remove('hidden');
           }
