@@ -268,6 +268,8 @@
           <div class="flex justify-between gap-2"><span class="font-bold text-slate-600 shrink-0">🛡️ PIC:</span> <strong id="detPetugas" class="font-black text-[#7C4DEA] truncate text-right"></strong></div>
           <div class="flex justify-between gap-2"><span class="font-bold text-slate-600 shrink-0">📅 Pinjam/Kembali:</span> <strong id="detTglInfo" class="font-bold text-slate-800 truncate text-right"></strong></div>
           <div class="flex justify-between gap-2"><span class="font-bold text-slate-600 shrink-0">📝 Catatan:</span> <strong id="detCatatan" class="font-bold text-slate-800 truncate text-right"></strong></div>
+          <div id="rowSerial" class="hidden flex justify-between gap-2"><span class="font-bold text-slate-600 shrink-0">🔢 Nomor Seri:</span> <strong id="detSerial" class="font-bold text-slate-800 break-words text-right"></strong></div>
+          <div id="rowLokasi" class="hidden flex justify-between gap-2"><span class="font-bold text-slate-600 shrink-0">📍 Dipakai di:</span> <strong id="detLokasi" class="font-bold text-slate-800 break-words text-right"></strong></div>
           <div class="flex justify-between gap-2"><span class="font-bold text-slate-500 shrink-0">✍️ Penginput:</span> <strong id="detPenginput" class="font-bold text-slate-700 truncate text-right"></strong></div>
         </div>
 
@@ -1042,6 +1044,21 @@
       return badge;
     }
 
+    // Format pesan WhatsApp untuk satu peminjam:
+    //   (nama peminjam)
+    //
+    //   1. alat (kembalikan ke PIC)
+    function buildWaText(nama, items) {
+      const lines = items.map((x, i) => {
+        const seri = x.serial ? ' - No. Seri ' + x.serial : '';
+        const pic = (x.petugasPinjam && x.petugasPinjam !== '-') ? ' (kembalikan ke ' + x.petugasPinjam + ')' : '';
+        return (i + 1) + '. ' + x.nama + seri + pic;
+      });
+      return nama + '\n\n' + lines.join('\n');
+    }
+
+    const sortNama = (a, b) => a.localeCompare(b, 'id', { sensitivity: 'base' });
+
     // Isi baris barang: nama (tebal), lalu kotak • peminjam (beda warna/ukuran), lalu lencana status di baris sendiri
     const DOT_SEP = '<span class="mx-1.5 text-[#C4B5FD]">•</span>';
     function infoInner(it, opts) {
@@ -1050,6 +1067,7 @@
       if (opts.box !== false) parts.push(`<span class="font-semibold text-[#0E9F8E]">${escapeHtml(it.sheetName)}</span>`);
       (opts.before || []).forEach(t => parts.push(`<span class="font-medium text-[#6B6B85]">${escapeHtml(t)}</span>`));
       if (it.peminjam && it.peminjam !== '-') parts.push(`<span class="font-bold text-[#7C4DEA]">${escapeHtml(it.peminjam)}</span>`);
+      if (it.serial) parts.push(`<span class="font-medium text-[#6B6B85]">No. Seri ${escapeHtml(it.serial)}</span>`);
       if (opts.pic && it.petugasPinjam && it.petugasPinjam !== '-') parts.push(`<span class="font-medium text-[#6B6B85]">PIC ${escapeHtml(it.petugasPinjam)}</span>`);
       (opts.after || []).forEach(t => parts.push(t));
       return `
@@ -1163,6 +1181,10 @@
       document.getElementById('detPetugas').innerText = item.petugasPinjam;
       document.getElementById('detTglInfo').innerText = `${item.tglPinjam} / ${item.tglKembali}`;
       document.getElementById('detCatatan').innerText = item.catatan;
+      document.getElementById('detSerial').innerText = item.serial || '';
+      document.getElementById('rowSerial').classList.toggle('hidden', !item.serial);
+      document.getElementById('detLokasi').innerText = item.lokasi || '';
+      document.getElementById('rowLokasi').classList.toggle('hidden', !item.lokasi);
       document.getElementById('detPenginput').innerText = item.penginput;
 
       const img = document.getElementById('detFoto');
@@ -1905,7 +1927,7 @@
       Array.from(setPetugas).sort().forEach(n => selPetugas.innerHTML += `<option value="${escapeHtml(n)}">🛡️ ${escapeHtml(n)}</option>`);
 
       selPeminjam.innerHTML = '<option value="">-- Pilih Nama Peminjam --</option>';
-      Array.from(setPeminjam).sort().forEach(n => selPeminjam.innerHTML += `<option value="${escapeHtml(n)}">👤 ${escapeHtml(n)}</option>`);
+      Array.from(setPeminjam).sort(sortNama).forEach(n => selPeminjam.innerHTML += `<option value="${escapeHtml(n)}">👤 ${escapeHtml(n)}</option>`);
 
       selPenginput.innerHTML = '<option value="">-- Pilih Nama Saudara --</option>';
       Array.from(setPenginput).sort().forEach(n => selPenginput.innerHTML += `<option value="${escapeHtml(n)}">✍️ ${escapeHtml(n)}</option>`);
@@ -1947,7 +1969,7 @@
         mapClient[c].push(it);
       });
 
-      const clients = Object.keys(mapClient).sort();
+      const clients = Object.keys(mapClient).sort(sortNama);
       summaryBox.classList.remove('hidden');
       document.getElementById('petugasTotalBarang').innerText = activeItems.length + ' Alat';
       document.getElementById('petugasTotalClient').innerText = clients.length + ' Orang';
@@ -1959,7 +1981,7 @@
 
       clients.forEach((clientName, cIdx) => {
         const items = mapClient[clientName];
-        const waRawText = `${clientName}\n` + items.map(x => `- ${x.nama} (Kotak: ${x.sheetName})`).join('\n');
+        const waRawText = buildWaText(clientName, items);
 
         const card = document.createElement('div');
         card.className = 'liquid-subcard p-3.5 rounded-2xl space-y-2.5';
@@ -2048,10 +2070,8 @@
       }
 
       const items = inventoryData.filter(x => x.peminjam === nama);
-      let waLines = [nama];
 
       items.forEach((it, idx) => {
-        waLines.push(`- ${it.nama} (${it.status} - Kotak: ${it.sheetName})`);
         const isDipakai = it.status === 'dipakai di gedung';
         
         const rowDiv = document.createElement('div');
@@ -2068,7 +2088,11 @@
         listEl.appendChild(rowDiv);
       });
 
-      currentWaTextClient = waLines.join('\n');
+      // Pesan WA hanya memuat barang yang masih harus dikembalikan
+      const belumKembali = items.filter(it => it.status === 'dipakai di gedung');
+      currentWaTextClient = belumKembali.length > 0
+        ? buildWaText(nama, belumKembali)
+        : nama + '\n\nSemua barang sudah dikembalikan. Terima kasih!';
       btnWa.className = "w-full btn-primary font-black py-3.5 rounded-2xl text-sm shadow-lg flex items-center justify-center gap-2 truncate";
       document.getElementById('txtCopyWaClient').innerText = "Copy ke WA";
       btnWa.classList.remove('hidden');
