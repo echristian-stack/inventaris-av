@@ -104,15 +104,15 @@
     .bg-blob { position: fixed; border-radius: 9999px; filter: blur(60px); pointer-events: none; z-index: -10; }
 
     /* Jendela popup & overlay: kaca ala macOS */
-    #editModal, #addModal, #pinjamModal, #transportModal, #customDialogModal { background: rgba(60, 45, 130, .14) !important; }
-    #editModal > div, #addModal > div, #pinjamModal > div, #transportModal > div, #customDialogModal > div, #horeToast > div {
+    #editModal, #addModal, #pinjamModal, #moveModal, #transportModal, #customDialogModal { background: rgba(60, 45, 130, .14) !important; }
+    #editModal > div, #addModal > div, #pinjamModal > div, #moveModal > div, #transportModal > div, #customDialogModal > div, #horeToast > div {
       background: linear-gradient(145deg, rgba(255, 255, 255, .78) 0%, rgba(255, 255, 255, .56) 100%) !important;
       -webkit-backdrop-filter: blur(30px) saturate(190%);
       backdrop-filter: blur(30px) saturate(190%);
       border: 1.5px solid rgba(255, 255, 255, .9) !important;
       box-shadow: 0 24px 60px rgba(60, 40, 150, .28), inset 0 2px 2px rgba(255, 255, 255, .95), inset 0 -2px 4px rgba(167, 139, 250, .12);
     }
-    #editModal .liquid-subcard, #addModal .liquid-subcard, #pinjamModal .liquid-subcard, #transportModal .liquid-subcard { background: rgba(255, 255, 255, .5); }
+    #editModal .liquid-subcard, #addModal .liquid-subcard, #pinjamModal .liquid-subcard, #moveModal .liquid-subcard, #transportModal .liquid-subcard { background: rgba(255, 255, 255, .5); }
 
     /* Tombol "Lanjut" & tombol teal: bercahaya */
     .btn-ocean, #btnNextTransport { box-shadow: 0 8px 22px rgba(45, 212, 191, .45), inset 0 1px 1px rgba(255, 255, 255, .45) !important; }
@@ -295,6 +295,9 @@
 
           <button onclick="openEditModal(currentItem)" class="w-full liquid-subcard text-[#1B1B30] font-black py-2.5 rounded-2xl text-xs flex items-center justify-center gap-1.5 border border-[#B9A7F5]">
             <span>🛠️</span> Edit / Titip / Rusak
+          </button>
+          <button onclick="openMoveModal(currentItem)" class="w-full liquid-subcard text-[#0E9F8E] font-black py-2.5 rounded-2xl text-xs flex items-center justify-center gap-1.5 border border-[#2DD4BF]">
+            <span>📦</span> Pindahkan ke Kotak Lain
           </button>
         </div>
       </div>
@@ -539,6 +542,38 @@
         <button onclick="closeModal('transportModal')" class="w-full bg-slate-200 text-slate-800 font-black py-2.5 rounded-2xl text-xs">
           Tutup
         </button>
+      </div>
+    </div>
+
+    <!-- MODAL: PINDAHKAN (permanen ke kotak lain) -->
+    <div id="moveModal" class="fixed inset-0 bg-[#1a1446]/50 backdrop-blur-sm hidden z-40 flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div class="liquid-glass bg-white/95 w-full sm:max-w-sm rounded-t-3xl sm:rounded-3xl p-4 shadow-2xl space-y-2.5">
+        <div class="flex justify-between items-center">
+          <h3 class="font-black text-sm text-[#1B1B30]">Pindahkan Alat</h3>
+          <button onclick="closeModal('moveModal')" class="text-slate-600 font-black text-lg">&times;</button>
+        </div>
+
+        <div class="liquid-subcard p-2.5 rounded-2xl">
+          <div id="mvNama" class="text-[13px] leading-snug font-extrabold text-[#1B1B30] break-words"></div>
+          <div class="text-[11px] mt-0.5 font-medium text-[#6B6B85]">Dari kotak <span id="mvAsal" class="font-semibold text-[#0E9F8E]"></span></div>
+        </div>
+
+        <div class="text-[11px] leading-snug font-semibold text-[#6B6B85]">Alat dipindahkan <b class="text-[#1B1B30]">permanen</b> (bukan titipan) dan tidak akan kembali sendiri ke kotak asal.</div>
+
+        <div>
+          <label class="font-black text-xs text-[#0E9F8E] block mb-0.5">Pindah ke kotak:</label>
+          <select id="mvTarget" class="liquid-input p-2.5 rounded-xl w-full text-xs font-black truncate"></select>
+        </div>
+
+        <div>
+          <label class="font-black text-xs text-[#7C4DEA] block mb-0.5">Nama Saudara *</label>
+          <input type="text" id="mvNamaSaudara" placeholder="Wajib diisi..." class="liquid-input p-2.5 rounded-xl w-full text-xs font-extrabold">
+        </div>
+
+        <div class="flex gap-2 pt-1">
+          <button onclick="closeModal('moveModal')" class="flex-1 bg-slate-200 text-slate-800 font-black py-2.5 rounded-2xl text-xs">Batal</button>
+          <button onclick="submitMove()" class="flex-1 btn-ocean font-black py-2.5 rounded-2xl text-xs">Pindahkan</button>
+        </div>
       </div>
     </div>
 
@@ -1335,6 +1370,12 @@
         btnEdit.onclick = () => openEditModal(it);
         btnWrap.appendChild(btnEdit);
 
+        const btnPindah = document.createElement('button');
+        btnPindah.className = 'liquid-subcard px-3.5 py-1.5 rounded-xl text-[11px] font-black text-[#0E9F8E]';
+        btnPindah.innerText = 'Pindahkan';
+        btnPindah.onclick = () => openMoveModal(it);
+        btnWrap.appendChild(btnPindah);
+
         if (it.originBox) {
           const btnPulang = document.createElement('button');
           btnPulang.className = 'bg-amber-600 text-white px-2 py-1 rounded-xl text-[10px] font-black truncate';
@@ -1489,6 +1530,60 @@
           applyServerData(res.freshData);
         });
       }, '✏️ Ganti Nama Kotak');
+    }
+
+    // ===== Pindahkan alat ke kotak lain (permanen, bukan titipan) =====
+    function openMoveModal(item) {
+      if (!item) return;
+      if (sheetList.length < 2) return showAppAlert('Belum ada kotak lain untuk tujuan pemindahan.');
+      currentItem = item;
+      document.getElementById('mvNama').innerText = item.nama + (item.serial ? ' - No. Seri ' + item.serial : '');
+      document.getElementById('mvAsal').innerText = item.sheetName.trim();
+      const sel = document.getElementById('mvTarget');
+      sel.innerHTML = '';
+      sheetList.filter(s => s !== item.sheetName).forEach(s => {
+        const o = document.createElement('option');
+        o.value = s; o.textContent = s.trim();
+        sel.appendChild(o);
+      });
+      sel.selectedIndex = 0;
+      document.getElementById('mvNamaSaudara').value = '';
+      document.getElementById('moveModal').classList.remove('hidden');
+    }
+
+    function submitMove() {
+      if (!currentItem || isBusy) return;
+      const target = document.getElementById('mvTarget').value;
+      const nama = document.getElementById('mvNamaSaudara').value.trim();
+      if (!target) return showAppAlert('Pilih kotak tujuan!');
+      if (!nama) return showAppAlert('Nama Saudara wajib diisi!');
+
+      const it = currentItem;
+      const orig = { sheetName: it.sheetName, row: it.row, nama: it.nama };
+      isBusy = true;
+      closeModal('moveModal');
+      showLoading(true);
+      optimisticPatch(it, { sheetName: target, originBox: '', penginput: nama });
+
+      callServer('updateItemData', {
+        payload: {
+          oldSheetName: orig.sheetName,
+          newSheetName: target,
+          row: orig.row,
+          originalNamaAlat: orig.nama,
+          namaAlat: it.nama,
+          status: it.status,
+          peminjam: it.peminjam === '-' ? '' : it.peminjam,
+          petugasPinjam: it.petugasPinjam === '-' ? '' : it.petugasPinjam,
+          catatan: it.catatan === '-' ? '' : it.catatan,
+          penginput: nama,
+          isTitipan: false,
+          moveOnly: true
+        }
+      }, res => {
+        celebrateHore(res.message);
+        applyServerData(res.freshData);
+      });
     }
 
     function openAddModal() {
