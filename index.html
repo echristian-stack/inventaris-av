@@ -591,6 +591,11 @@
             <input type="text" id="edtNama" class="liquid-input p-2.5 rounded-xl w-full text-xs font-extrabold">
           </div>
 
+          <div id="edtSerialWrap" class="hidden">
+            <label class="font-black text-[#0E9F8E] block mb-0.5">Nomor Seri</label>
+            <input type="text" id="edtSerial" placeholder="Nomor seri alat..." class="liquid-input p-2.5 rounded-xl w-full text-xs font-extrabold">
+          </div>
+
           <div class="liquid-subcard p-2.5 rounded-2xl space-y-1.5">
             <div>
               <label class="font-black text-[#0E9F8E] block mb-0.5">📦 Kotak:</label>
@@ -681,6 +686,11 @@
           <div>
             <label class="font-black text-[#1B1B30] block mb-0.5">2. Nama Alat *</label>
             <input type="text" id="newNama" placeholder="Nama alat..." class="liquid-input p-2.5 rounded-xl w-full text-xs font-extrabold">
+          </div>
+
+          <div id="newSerialWrap" class="hidden">
+            <label class="font-black text-[#0E9F8E] block mb-0.5">Nomor Seri</label>
+            <input type="text" id="newSerial" placeholder="Nomor seri alat..." class="liquid-input p-2.5 rounded-xl w-full text-xs font-extrabold">
           </div>
 
           <div>
@@ -1479,11 +1489,13 @@
 
     function openAddModal() {
       document.getElementById('newNama').value = '';
+      document.getElementById('newSerial').value = '';
       document.getElementById('newPenginput').value = getSavedUserName();
       document.getElementById('newCatatan').value = '';
       document.getElementById('newFoto').value = '';
       document.getElementById('previewNew').classList.add('hidden');
       base64New = null; fileNameNew = null;
+      onNewSheetChange();
       document.getElementById('addModal').classList.remove('hidden');
     }
 
@@ -1568,6 +1580,10 @@
       if (!item) return;
       currentItem = item;
       document.getElementById('edtNama').value = item.nama;
+      // Kolom Nomor Seri tampil bila alat ini atau alat lain di kotak yang sama punya nomor seri (mis. Walkie Talkie)
+      const punyaSeri = !!item.serial || inventoryData.some(x => x.sheetName === item.sheetName && x.serial);
+      document.getElementById('edtSerialWrap').classList.toggle('hidden', !punyaSeri);
+      document.getElementById('edtSerial').value = item.serial || '';
       document.getElementById('edtSheet').value = item.sheetName;
       document.getElementById('edtStatus').value = item.status;
       document.getElementById('edtPeminjam').value = item.peminjam !== '-' ? item.peminjam : '';
@@ -1609,6 +1625,8 @@
       const catatan = document.getElementById('edtCatatan').value.trim() || '-';
       const penginput = document.getElementById('edtPenginput').value.trim();
       const isTitipan = document.getElementById('edtIsTitipan').checked;
+      const serialVisible = !document.getElementById('edtSerialWrap').classList.contains('hidden');
+      const serial = serialVisible ? document.getElementById('edtSerial').value.trim() : undefined;
 
       if (!namaAlat || !penginput) return showAppAlert('Nama Alat dan Nama Saudara wajib diisi!');
 
@@ -1619,6 +1637,7 @@
 
       const orig = { sheetName: currentItem.sheetName, row: currentItem.row, nama: currentItem.nama, originBox: currentItem.originBox };
       const patchEdit = { nama: namaAlat, status: status, peminjam: peminjam, petugasPinjam: petugas, catatan: catatan, penginput: penginput, kondisi: kondisiLokal(status, catatan) };
+      if (serial !== undefined) patchEdit.serial = serial;
       if (status === 'dipakai di gedung') { patchEdit.tglPinjam = todayStr(); patchEdit.tglKembali = '-'; }
       else if (status === 'Selesai masuk kotak') { patchEdit.tglKembali = todayStr(); }
       if (newSheet !== orig.sheetName) {
@@ -1640,6 +1659,7 @@
           petugasPinjam: petugas,
           catatan: catatan,
           penginput: penginput,
+          serial: serial,
           isTitipan: isTitipan,
           fileData: base64Edt,
           fileName: fileNameEdt
@@ -1714,6 +1734,9 @@
     function onNewSheetChange() {
       const val = document.getElementById('newSheetSelect').value;
       document.getElementById('newBoxNameWrap').classList.toggle('hidden', val !== '__NEW__');
+      // Nomor Seri hanya untuk kotak yang memakainya (mis. Walkie Talkie)
+      const punyaSeri = val !== '__NEW__' && inventoryData.some(x => x.sheetName === val && x.serial);
+      document.getElementById('newSerialWrap').classList.toggle('hidden', !punyaSeri);
     }
 
     function handlePhotoUpload(event, mode) {
@@ -1761,6 +1784,7 @@
       }
 
       const namaAlat = document.getElementById('newNama').value.trim();
+      const serialBaru = document.getElementById('newSerialWrap').classList.contains('hidden') ? '' : document.getElementById('newSerial').value.trim();
       const penginput = document.getElementById('newPenginput').value.trim();
       const status = document.getElementById('newStatus').value;
       const catatan = document.getElementById('newCatatan').value.trim() || '-';
@@ -1779,7 +1803,7 @@
       const itemKe = inventoryData.filter(x => x.sheetName === targetSheet).length + 1;
       inventoryData.push({
         id: targetSheet + '__ROW__tmp', sheetName: targetSheet, row: 0, colName: 'A', itemNumber: itemKe,
-        nama: namaAlat, peminjam: '-', status: status, kondisi: kondisiLokal(status, catatan),
+        nama: namaAlat, serial: serialBaru, peminjam: '-', status: status, kondisi: kondisiLokal(status, catatan),
         tglPinjam: '-', tglKembali: '-', foto: '', catatan: catatan, penginput: penginput, petugasPinjam: '-', originBox: ''
       });
       rerenderAll();
@@ -1789,6 +1813,7 @@
           createNew: isNewBox,
           sheetName: targetSheet,
           namaAlat: namaAlat,
+          serial: serialBaru,
           penginput: penginput,
           status: status,
           peminjam: '-',
