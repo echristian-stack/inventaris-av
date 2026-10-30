@@ -897,12 +897,11 @@
       }, 20000);
     };
 
-    function getSavedUserName() {
-      try { return localStorage.getItem('av_nama_saudara') || ''; } catch(e) { return ''; }
-    }
+    // Aplikasi TIDAK lagi mengingat nama: setiap formulir harus diisi manual. Nama lama yang tersimpan dihapus.
+    try { localStorage.removeItem('av_nama_saudara'); } catch(e) {}
+    function getSavedUserName() { return ''; }
     function saveUserName(name) {
-      if (!name || name === '-') return;
-      try { localStorage.setItem('av_nama_saudara', name.trim()); } catch(e) {}
+      // sengaja kosong: nama tidak disimpan
     }
 
     function getTransportMeta(statusKey) {
@@ -1358,7 +1357,7 @@
     function openTransportModal(boxName) {
       activeTransportBox = boxName;
       document.getElementById('mdlTransBoxName').innerText = boxName;
-      document.getElementById('mdlTransUpdater').value = getSavedUserName();
+      document.getElementById('mdlTransUpdater').value = '';
 
       const curStatus = (boxTransport[boxName] && boxTransport[boxName].status) || 'Tidak Dibawa';
       const optContainer = document.getElementById('mdlTransportOptions');
@@ -1495,11 +1494,18 @@
     function openAddModal() {
       document.getElementById('newNama').value = '';
       document.getElementById('newSerial').value = '';
-      document.getElementById('newPenginput').value = getSavedUserName();
+      document.getElementById('newPenginput').value = '';
       document.getElementById('newCatatan').value = '';
       document.getElementById('newFoto').value = '';
       document.getElementById('previewNew').classList.add('hidden');
       base64New = null; fileNameNew = null;
+      // Kotak tujuan bawaan = kotak yang sedang dibuka (tab Kotak), atau kotak yang sedang difilter (tab Cari)
+      const sel = document.getElementById('newSheetSelect');
+      let target = '';
+      if (!document.getElementById('secEdit').classList.contains('hidden')) target = document.getElementById('manageBoxSelect').value;
+      else if (document.getElementById('filterKotak').value !== 'ALL') target = document.getElementById('filterKotak').value;
+      else if (currentItem && sheetList.includes(currentItem.sheetName) && !document.getElementById('detailCard').classList.contains('hidden')) target = currentItem.sheetName;
+      if (target && sheetList.includes(target)) sel.value = target;
       onNewSheetChange();
       document.getElementById('addModal').classList.remove('hidden');
     }
@@ -1518,7 +1524,7 @@
       document.getElementById('mdlPinjamNamaAlat').innerText = currentItem.nama;
       document.getElementById('mdlPinjamKotak').innerText = 'Kotak: ' + currentItem.sheetName;
       document.getElementById('mdlPeminjamNama').value = currentItem.peminjam !== '-' ? currentItem.peminjam : '';
-      document.getElementById('mdlPetugasNama').value = getSavedUserName() || (currentItem.petugasPinjam !== '-' ? currentItem.petugasPinjam : '');
+      document.getElementById('mdlPetugasNama').value = '';
       document.getElementById('mdlPinjamCatatan').value = currentItem.catatan !== '-' ? currentItem.catatan : '';
       document.getElementById('pinjamModal').classList.remove('hidden');
     }
@@ -1594,7 +1600,7 @@
       document.getElementById('edtPeminjam').value = item.peminjam !== '-' ? item.peminjam : '';
       document.getElementById('edtPetugas').value = item.petugasPinjam !== '-' ? item.petugasPinjam : '';
       document.getElementById('edtCatatan').value = item.catatan !== '-' ? item.catatan : '';
-      document.getElementById('edtPenginput').value = getSavedUserName() || (item.penginput !== '-' ? item.penginput : '');
+      document.getElementById('edtPenginput').value = '';
       document.getElementById('edtFoto').value = '';
       document.getElementById('previewEdt').classList.add('hidden');
       
@@ -1732,6 +1738,8 @@
 
       const prevFilter = filterKotak.value || 'ALL';
       const prevManage = manageBox.value || (sheetList[0] || '');
+      const prevNewSheet = newSheetSelect.value;   // jangan sampai pilihan kotak di form Tambah/Edit kembali ke kotak pertama
+      const prevEdtSheet = edtSheet.value;
 
       filterKotak.innerHTML = '<option value="ALL">📦 Semua Kotak</option>';
       manageBox.innerHTML = '';
@@ -1752,6 +1760,8 @@
       filterKotak.value = prevFilter;
       if (filterKotak.value !== prevFilter) filterKotak.value = 'ALL'; // kotak terpilih sudah dihapus/diganti nama
       if (sheetList.includes(prevManage)) manageBox.value = prevManage;
+      if (prevNewSheet === '__NEW__' || sheetList.includes(prevNewSheet)) newSheetSelect.value = prevNewSheet;
+      if (sheetList.includes(prevEdtSheet)) edtSheet.value = prevEdtSheet;
 
       onNewSheetChange();
       populateTimDropdowns();
